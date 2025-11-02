@@ -9,6 +9,7 @@ import org.teamdeadbolts.constants.SwerveConstants;
 /**
  * Configuration for CTRE devices
  */
+@SuppressWarnings("unchecked")
 public class CtreUtils {
     /* Confgis */
     /* Swerve */
@@ -41,7 +42,13 @@ public class CtreUtils {
     private static final LoggedNetworkNumber dClosedLoopRamp =
             new LoggedNetworkNumber("Tuning/Swerve/Drive/ClosedLoopRamp", 0.0);
 
+    // private static final LoggedDashboardChooser dGearRatio =
+    // new LoggedDashboardChooser<Integer>("Tuning/Swerve/Drive/GearRatio");
+
     static {
+        // dGearRatio.addDefaultOption("R1", 0);
+        // dGearRatio.addOption("R2", 1);
+        // dGearRatio.addOption("R3", 2);
         init();
     }
 
@@ -68,7 +75,24 @@ public class CtreUtils {
         swerveDriveFXConfig.MotorOutput.NeutralMode = SwerveConstants.DRIVE_NEUTRAL_MODE;
 
         /* Gear ratio */
-        swerveDriveFXConfig.Feedback.SensorToMechanismRatio = SwerveConstants.DRIVE_GEAR_RATIO;
+        // switch ((int) dGearRatio.get()) {
+        //     case 0:
+        //         swerveDriveFXConfig.Feedback.SensorToMechanismRatio =
+        //                 SwerveConstants.DRIVE_GEAR_RATIO_R1;
+        //         break;
+        //     case 1:
+        //         swerveDriveFXConfig.Feedback.SensorToMechanismRatio =
+        //                 SwerveConstants.DRIVE_GEAR_RATIO_R2;
+        //         break;
+        //     case 2:
+        //         swerveDriveFXConfig.Feedback.SensorToMechanismRatio =
+        //                 SwerveConstants.DRIVE_GEAR_RATIO_R3;
+        //         break;
+        //     default:
+        //         break;
+        // }
+
+        swerveDriveFXConfig.Feedback.SensorToMechanismRatio = SwerveConstants.DRIVE_GEAR_RATIO_R1;
 
         /** Current limiting */
         swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;

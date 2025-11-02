@@ -11,29 +11,31 @@ import edu.wpi.first.math.util.Units;
 import org.teamdeadbolts.subsystems.drive.SwerveModule.SwerveModuleConfig;
 
 public class SwerveConstants {
-    public static final double WHEEL_CIRCUMFERENCE = 0.0;
+    public static final double WHEEL_CIRCUMFERENCE = Units.inchesToMeters(2.25 * Math.PI);
     public static final double CHASSIS_SIZE = Units.inchesToMeters(30);
     public static final SensorDirectionValue SENSOR_DIRECTION =
             SensorDirectionValue.Clockwise_Positive;
     /* Turning constants */
     public static final InvertedValue TURN_INVERTED_MODE = InvertedValue.Clockwise_Positive;
     public static final NeutralModeValue TURN_NEUTRAL_MODE = NeutralModeValue.Brake;
-    public static final double TURN_GEAR_RATIO = 0.0;
+    public static final double TURN_GEAR_RATIO = 287 / 11;
 
     /* Driving constants */
     public static final InvertedValue DRIVE_INVERTED_MODE = InvertedValue.Clockwise_Positive;
     public static final NeutralModeValue DRIVE_NEUTRAL_MODE = NeutralModeValue.Brake;
-    public static final double DRIVE_GEAR_RATIO = 0.0;
+    public static final double DRIVE_GEAR_RATIO_R1 = 7.03;
+    public static final double DRIVE_GEAR_RATIO_R2 = 6.03;
+    public static final double DRIVE_GEAR_RATIO_R3 = 5.27;
 
     /* Module constants */
-    public static final SwerveModuleConfig FRONT_RIGHT_CONFIG =
-            new SwerveModuleConfig(0, new Rotation2d(), 0, 0, 0);
     public static final SwerveModuleConfig FRONT_LEFT_CONFIG =
-            new SwerveModuleConfig(1, new Rotation2d(), 0, 0, 0);
-    public static final SwerveModuleConfig BACK_RIGHT_CONFIG =
-            new SwerveModuleConfig(2, new Rotation2d(), 0, 0, 0);
+            new SwerveModuleConfig(0, Rotation2d.fromDegrees(-47.109), 0, 1, 2);
+    public static final SwerveModuleConfig FRONT_RIGHT_CONFIG =
+            new SwerveModuleConfig(1, Rotation2d.fromDegrees(162.334), 3, 4, 5);
     public static final SwerveModuleConfig BACK_LEFT_CONFIG =
-            new SwerveModuleConfig(3, new Rotation2d(), 0, 0, 0);
+            new SwerveModuleConfig(2, Rotation2d.fromDegrees(144.756), 6, 7, 8);
+    public static final SwerveModuleConfig BACK_RIGHT_CONFIG =
+            new SwerveModuleConfig(3, Rotation2d.fromDegrees(173.32), 9, 10, 11);
 
     /* Kinematics */
     public static final SwerveDriveKinematics SWERVE_KINEMATICS =

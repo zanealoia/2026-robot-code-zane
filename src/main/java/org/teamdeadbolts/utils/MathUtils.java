@@ -12,6 +12,12 @@ public class MathUtils {
         return wMPS / c;
     }
 
+    /**
+     * Convert rotations per second to meters per second
+     * @param wRPS The wheel velocity (in <strong>rotations/s</strong>)
+     * @param c The circumference of the wheels
+     * @return Wheel velocity (in <strong>m/s</strong>)
+     */
     public static double RPSToMPS(double wRPS, double c) {
         return wRPS * c;
     }

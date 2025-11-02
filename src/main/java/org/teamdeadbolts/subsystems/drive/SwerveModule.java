@@ -9,6 +9,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.utils.CtreUtils;
@@ -60,7 +61,7 @@ public class SwerveModule {
      * @param desiredState The desired state
      */
     public void setDesiredState(SwerveModuleState desiredState) {
-        desiredState.optimize(offset);
+        desiredState.optimize(getRotation());
         this.setSpeed(desiredState.speedMetersPerSecond);
         this.setAngle(desiredState.angle);
     }
@@ -70,6 +71,7 @@ public class SwerveModule {
      * @param speed The desired speed in <strong>m/s</strong>
      */
     private void setSpeed(double speed) {
+        Logger.recordOutput("Swerve/Module " + moduleNumber + "/TargetSpeed", speed);
         driveVel.Velocity = MathUtils.MPSToRPS(speed, SwerveConstants.WHEEL_CIRCUMFERENCE);
         driveVel.FeedForward = driveFF.calculate(speed);
         driveMotor.setControl(this.driveVel);
@@ -80,22 +82,24 @@ public class SwerveModule {
      * @param angle The angle as a {@link Rotation2d}
      */
     private void setAngle(Rotation2d angle) {
+        Logger.recordOutput("Swerve/Module " + moduleNumber + "/TargetAngle", angle.getDegrees());
         turningMotor.setControl(this.turningPosition.withPosition(angle.getRotations()));
     }
 
     /**
      * Get the current rotation of the module
-     * @return The rotation of the wheel
+     * @return The rotation of the module
      */
     public Rotation2d getRotation() {
-        return Rotation2d.fromRotations(encoder.getAbsolutePosition().getValueAsDouble());
+        return Rotation2d.fromRotations(encoder.getAbsolutePosition().getValueAsDouble())
+                .plus(this.offset);
     }
 
     /**
      * Reset the module to the absoulte position
      */
     public void resetToAbs() {
-        double absPos = this.getRotation().getRotations() - offset.getRotations();
+        double absPos = this.getRotation().getRotations() + offset.getRotations();
         turningMotor.setPosition(absPos);
     }
 

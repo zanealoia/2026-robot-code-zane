@@ -2,6 +2,7 @@
 package org.teamdeadbolts.subsystems.drive;
 
 import com.studica.frc.AHRS;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -19,8 +20,15 @@ public class SwerveSubsystem extends SubsystemBase {
     private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
     private SwerveDriveOdometry swerveDriveOdometry;
     private SwerveModule[] modules;
+    private SlewRateLimiter slewRateLimiterTranslationalX;
+    private SlewRateLimiter slewRateLimiterTranslationalY;
+    private SlewRateLimiter slewRateLimiterRotaional;
 
     private LoggedNetworkNumber maxSpeed = new LoggedNetworkNumber("Tuning/Swerve/MaxSpeed", 1.0);
+    private LoggedNetworkNumber slewRateTranslational =
+            new LoggedNetworkNumber("Tuning/Swerve/TranslationSlew", 1.0);
+    private LoggedNetworkNumber slewRateRotaional =
+            new LoggedNetworkNumber("Tuning/Swerve/RotationSlew", 1.0);
 
     public SwerveSubsystem() {
         this.resetGyro();
@@ -35,6 +43,8 @@ public class SwerveSubsystem extends SubsystemBase {
         this.swerveDriveOdometry =
                 new SwerveDriveOdometry(
                         SwerveConstants.SWERVE_KINEMATICS, getGyroRotation(), getModulePositions());
+
+        this.refreshTuning();
     }
 
     /**
@@ -43,17 +53,36 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param rotation The target rotation speed for the motion in <strong>rads/sec</strong>
      * @param fieldRelative Weather or not to drive the robot relative to the field or itself
      */
-    public void drive(Translation2d translation, double rotation, boolean fieldRelative) {
+    public void drive(
+            Translation2d translation, double rotation, boolean fieldRelative, boolean slewRates) {
         SwerveModuleState[] states =
                 SwerveConstants.SWERVE_KINEMATICS.toSwerveModuleStates(
                         fieldRelative
                                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                        translation.getX(),
-                                        translation.getY(),
-                                        rotation,
+                                        slewRates
+                                                ? slewRateLimiterTranslationalX.calculate(
+                                                        translation.getX())
+                                                : translation.getX(),
+                                        slewRates
+                                                ? slewRateLimiterTranslationalY.calculate(
+                                                        translation.getY())
+                                                : translation.getY(),
+                                        slewRates
+                                                ? slewRateLimiterRotaional.calculate(rotation)
+                                                : rotation,
                                         getHeading())
                                 : new ChassisSpeeds(
-                                        translation.getX(), translation.getY(), rotation));
+                                        slewRates
+                                                ? slewRateLimiterTranslationalX.calculate(
+                                                        translation.getX())
+                                                : translation.getX(),
+                                        slewRates
+                                                ? slewRateLimiterTranslationalY.calculate(
+                                                        translation.getY())
+                                                : translation.getY(),
+                                        slewRates
+                                                ? slewRateLimiterRotaional.calculate(rotation)
+                                                : rotation));
 
         SwerveDriveKinematics.desaturateWheelSpeeds(states, maxSpeed.get());
         for (SwerveModule m : modules) {
@@ -68,10 +97,18 @@ public class SwerveSubsystem extends SubsystemBase {
         gyro.reset();
     }
 
+    /**
+     * Get the rotation of the robot
+     * @return The rotation
+     */
     public Rotation2d getGyroRotation() {
         return Rotation2d.fromDegrees(gyro.getAngle());
     }
 
+    /**
+     * Get the states of all of the modules
+     * @return 4 {@link SwerveModuleState}s (front left, front right, back left, back right)
+     */
     public SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
         for (SwerveModule m : this.modules) {
@@ -117,6 +154,19 @@ public class SwerveSubsystem extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, this.maxSpeed.get());
         for (SwerveModule m : this.modules) {
             m.setDesiredState(desiredStates[m.getModuleNumber()]);
+        }
+    }
+
+    /**
+     * Refresh the tuning values from AdvantageKit
+     */
+    public void refreshTuning() {
+        this.slewRateLimiterTranslationalX = new SlewRateLimiter(slewRateTranslational.get());
+        this.slewRateLimiterTranslationalY = new SlewRateLimiter(slewRateTranslational.get());
+        this.slewRateLimiterRotaional = new SlewRateLimiter(slewRateRotaional.get());
+
+        for (SwerveModule m : modules) {
+            m.configure();
         }
     }
 
