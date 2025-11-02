@@ -27,10 +27,15 @@ public class SwerveModule {
 
     private final PositionVoltage turningPosition = new PositionVoltage(0);
 
+    private final LoggedNetworkNumber dFFkS =
+            new LoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKS", 0.0);
+    private final LoggedNetworkNumber dFFkV =
+            new LoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKV", 0.0);
     private final SimpleMotorFeedforward driveFF =
-            new SimpleMotorFeedforward(
-                    new LoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKS", 0.0).get(),
-                    new LoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKV", 0.0).get());
+            new SimpleMotorFeedforward(dFFkS.get(), dFFkS.get());
+
+    private final LoggedNetworkNumber tFeedfoward =
+            new LoggedNetworkNumber("Tuning/Swerve/Turn/Feedforward", 0.0);
 
     /**
      * Create a new swerve module
@@ -43,8 +48,8 @@ public class SwerveModule {
         this.encoder = new CANcoder(config.encoderId());
         this.driveMotor = new TalonFX(config.driveMotorId());
         this.turningMotor = new TalonFX(config.turningMotorId());
-        this.resetToAbs();
         this.configure();
+        this.resetToAbs();
         this.driveMotor.setPosition(0.0);
     }
 
@@ -54,6 +59,9 @@ public class SwerveModule {
     public void configure() {
         this.driveMotor.getConfigurator().apply(CtreUtils.swerveDriveFXConfig);
         this.turningMotor.getConfigurator().apply(CtreUtils.swerveTurningFXConfig);
+
+        this.driveFF.setKs(dFFkS.get());
+        this.driveFF.setKv(dFFkV.get());
     }
 
     /**
@@ -83,7 +91,20 @@ public class SwerveModule {
      */
     private void setAngle(Rotation2d angle) {
         Logger.recordOutput("Swerve/Module " + moduleNumber + "/TargetAngle", angle.getDegrees());
-        turningMotor.setControl(this.turningPosition.withPosition(angle.getRotations()));
+        Logger.recordOutput(
+                "Swerve/Module " + moduleNumber + "/TargetAngleRaw",
+                angle.plus(offset).getDegrees());
+
+        this.turningPosition.Position = angle.plus(offset).getRotations();
+        this.turningPosition.FeedForward = tFeedfoward.get();
+        turningMotor.setControl(this.turningPosition);
+    }
+
+    public void setPos(double pos) {
+        this.turningPosition.Position = pos;
+        // this.turningPosition.EnableFOC
+        this.turningPosition.Velocity = Rotation2d.fromDegrees(40).getRotations();
+        this.turningMotor.setControl(this.turningPosition);
     }
 
     /**
@@ -91,6 +112,15 @@ public class SwerveModule {
      * @return The rotation of the module
      */
     public Rotation2d getRotation() {
+        Logger.recordOutput(
+                "Swerve/Module " + moduleNumber + "/CurrentAngleRaw",
+                Rotation2d.fromRotations(encoder.getAbsolutePosition().getValueAsDouble())
+                        .getDegrees());
+
+        Logger.recordOutput(
+                "Swerve/Module " + moduleNumber + "/RelEncoderPos",
+                Rotation2d.fromRotations(turningMotor.getPosition().getValueAsDouble())
+                        .getDegrees());
         return Rotation2d.fromRotations(encoder.getAbsolutePosition().getValueAsDouble())
                 .plus(this.offset);
     }
@@ -112,7 +142,7 @@ public class SwerveModule {
                 MathUtils.RPSToMPS(
                         driveMotor.getVelocity().getValueAsDouble(),
                         SwerveConstants.WHEEL_CIRCUMFERENCE),
-                Rotation2d.fromRotations(turningMotor.getPosition().getValueAsDouble()));
+                this.getRotation());
     }
 
     /**
@@ -124,7 +154,7 @@ public class SwerveModule {
                 MathUtils.RPSToMPS(
                         driveMotor.getVelocity().getValueAsDouble(),
                         SwerveConstants.WHEEL_CIRCUMFERENCE),
-                Rotation2d.fromRotations(turningMotor.getPosition().getValueAsDouble()));
+                this.getRotation());
     }
 
     public int getModuleNumber() {

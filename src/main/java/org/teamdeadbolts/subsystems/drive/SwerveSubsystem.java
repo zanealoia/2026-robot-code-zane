@@ -170,6 +170,10 @@ public class SwerveSubsystem extends SubsystemBase {
         }
     }
 
+    public SwerveModule getModule(int id) {
+        return this.modules[id];
+    }
+
     @Override
     public void periodic() {
         swerveDriveOdometry.update(getGyroRotation(), getModulePositions());
@@ -178,12 +182,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
         for (SwerveModule m : modules) {
             Logger.recordOutput(
-                    "Module " + m.getModuleNumber() + " Rotation", m.getRotation().getDegrees());
+                    "Swerve/Module " + m.getModuleNumber() + "/CurrentRotation",
+                    m.getRotation().getDegrees());
             Logger.recordOutput(
-                    "Module " + m.getModuleNumber() + " Integrated",
+                    "Swerve/Module " + m.getModuleNumber() + "/CurrentStateAngle",
                     m.getPosition().angle.getDegrees());
             Logger.recordOutput(
-                    "Module " + m.getModuleNumber() + " Velocity",
+                    "Swerve/Module " + m.getModuleNumber() + "/CurrentVelocity",
                     m.getState().speedMetersPerSecond);
         }
     }

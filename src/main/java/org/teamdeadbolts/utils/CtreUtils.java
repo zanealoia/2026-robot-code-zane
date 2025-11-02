@@ -45,13 +45,6 @@ public class CtreUtils {
     // private static final LoggedDashboardChooser dGearRatio =
     // new LoggedDashboardChooser<Integer>("Tuning/Swerve/Drive/GearRatio");
 
-    static {
-        // dGearRatio.addDefaultOption("R1", 0);
-        // dGearRatio.addOption("R2", 1);
-        // dGearRatio.addOption("R3", 2);
-        init();
-    }
-
     public static void init() {
         /* Turning motor config */
         /* Motor inverts and neutral modef */

@@ -2,6 +2,7 @@
 package org.teamdeadbolts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -58,6 +59,16 @@ public class RobotContainer {
         primaryController
                 .x()
                 .whileTrue(new RunCommand(() -> swerveSubsystem.resetGyro(), swerveSubsystem));
+
+        primaryController
+                .y()
+                .whileTrue(
+                        new RunCommand(
+                                () ->
+                                        swerveSubsystem
+                                                .getModule(3)
+                                                .setPos(Rotation2d.fromDegrees(180).getRotations()),
+                                swerveSubsystem));
     }
 
     public Command getAutonomousCommand() {

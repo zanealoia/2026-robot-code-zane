@@ -11,6 +11,7 @@ import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.teamdeadbolts.utils.CtreUtils;
 
 public class Robot extends LoggedRobot {
     private Command autonomousCommand;
@@ -56,6 +57,11 @@ public class Robot extends LoggedRobot {
         if (autonomousCommand != null) {
             autonomousCommand.schedule();
         }
+    }
+
+    @Override
+    public void robotInit() {
+        CtreUtils.init();
     }
 
     @Override
