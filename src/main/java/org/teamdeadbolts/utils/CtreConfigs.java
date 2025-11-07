@@ -10,7 +10,7 @@ import org.teamdeadbolts.constants.SwerveConstants;
  * Configuration for CTRE devices
  */
 @SuppressWarnings("unchecked")
-public class CtreUtils {
+public class CtreConfigs {
     /* Confgis */
     /* Swerve */
     public static TalonFXConfiguration swerveTurningFXConfig = new TalonFXConfiguration();
@@ -20,30 +20,17 @@ public class CtreUtils {
     /* Trun motor tuning values */
     private static final LoggedNetworkNumber tCurrentLimit =
             new LoggedNetworkNumber("Tuning/Swerve/Turn/CurrentLimit", 0.0);
-    private static final LoggedNetworkNumber tP =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/kP", 0.0);
-    private static final LoggedNetworkNumber tI =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/kI", 0.0);
-    private static final LoggedNetworkNumber tD =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/kD", 0.0);
 
     /* Drive motor tuning values */
     private static final LoggedNetworkNumber dCurrentLimit =
             new LoggedNetworkNumber("Tuning/Swerve/Drive/CurrentLimit", 0.0);
-    private static final LoggedNetworkNumber dP =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/kP", 0.0);
-    private static final LoggedNetworkNumber dI =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/kI", 0.0);
-    private static final LoggedNetworkNumber dD =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/kD", 0.0);
-
-    private static final LoggedNetworkNumber dOpenLoopRamp =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/OpenLoopRamp", 0.0);
-    private static final LoggedNetworkNumber dClosedLoopRamp =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/ClosedLoopRamp", 0.0);
 
     // private static final LoggedDashboardChooser dGearRatio =
     // new LoggedDashboardChooser<Integer>("Tuning/Swerve/Drive/GearRatio");
+
+    static {
+        init();
+    }
 
     public static void init() {
         /* Turning motor config */
@@ -58,10 +45,6 @@ public class CtreUtils {
         /* Current limiting */
         swerveTurningFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         swerveTurningFXConfig.CurrentLimits.SupplyCurrentLimit = tCurrentLimit.get();
-
-        swerveTurningFXConfig.Slot0.kP = tP.get();
-        swerveTurningFXConfig.Slot0.kI = tI.get();
-        swerveTurningFXConfig.Slot0.kD = tD.get();
 
         /* Drive Motor Config */
         swerveDriveFXConfig.MotorOutput.Inverted = SwerveConstants.DRIVE_INVERTED_MODE;
@@ -90,18 +73,6 @@ public class CtreUtils {
         /** Current limiting */
         swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimit = dCurrentLimit.get();
-
-        /* Drive PID */
-        swerveDriveFXConfig.Slot0.kP = dP.get();
-        swerveDriveFXConfig.Slot0.kI = dI.get();
-        swerveDriveFXConfig.Slot0.kD = dD.get();
-
-        /* Loop ramping (accel) */
-        swerveDriveFXConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = dOpenLoopRamp.get();
-        swerveDriveFXConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = dOpenLoopRamp.get();
-
-        swerveDriveFXConfig.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = dClosedLoopRamp.get();
-        swerveDriveFXConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = dClosedLoopRamp.get();
 
         /* Swerve CANCoder config */
         swerveCANcoderConfiguration.MagnetSensor.SensorDirection = SwerveConstants.SENSOR_DIRECTION;
