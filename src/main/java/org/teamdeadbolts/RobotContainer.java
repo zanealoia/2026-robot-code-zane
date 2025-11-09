@@ -20,6 +20,12 @@ public class RobotContainer {
     private LoggedNetworkNumber controllerDeadband =
             new LoggedNetworkNumber("Tuning/Drive/ControllerDeadband", 0.08);
 
+    private LoggedNetworkNumber maxRobotSpeed =
+            new LoggedNetworkNumber("Tuning/Drive/MaxRobotSpeed", 1.0);
+
+    private LoggedNetworkNumber maxRobotAnglarSpeed =
+            new LoggedNetworkNumber("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
+
     public RobotContainer() {
         configureBindings();
     }
@@ -30,15 +36,19 @@ public class RobotContainer {
                         swerveSubsystem,
                         () ->
                                 MathUtil.applyDeadband(
-                                        primaryController.getLeftY(), controllerDeadband.get()),
+                                                primaryController.getLeftY(),
+                                                controllerDeadband.get())
+                                        * maxRobotSpeed.get(),
                         () ->
-                                MathUtil.applyDeadband(
-                                        primaryController.getLeftX(), controllerDeadband.get()),
+                                -MathUtil.applyDeadband(
+                                                primaryController.getLeftX(),
+                                                controllerDeadband.get())
+                                        * maxRobotSpeed.get(),
                         () ->
                                 MathUtil.applyDeadband(
                                                 primaryController.getRightX(),
                                                 controllerDeadband.get())
-                                        * Math.toRadians(360),
+                                        * Math.toRadians(maxRobotAnglarSpeed.get()),
                         true));
 
         primaryController

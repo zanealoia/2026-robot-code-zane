@@ -1,6 +1,8 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import com.studica.frc.AHRS;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,7 +13,10 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 import org.teamdeadbolts.constants.SwerveConstants;
@@ -24,20 +29,33 @@ public class SwerveSubsystem extends SubsystemBase {
     private SlewRateLimiter slewRateLimiterTranslationalY;
     private SlewRateLimiter slewRateLimiterRotaional;
 
-    private LoggedNetworkNumber maxSpeed = new LoggedNetworkNumber("Tuning/Swerve/MaxSpeed", 1.0);
+    private LoggedNetworkNumber maxModuleSpeed =
+            new LoggedNetworkNumber("Tuning/Swerve/MaxModuleSpeed", 1.0);
     private LoggedNetworkNumber slewRateTranslational =
             new LoggedNetworkNumber("Tuning/Swerve/TranslationSlew", 1.0);
     private LoggedNetworkNumber slewRateRotaional =
             new LoggedNetworkNumber("Tuning/Swerve/RotationSlew", 1.0);
 
+    private SysIdRoutine driveRoutine =
+            new SysIdRoutine(
+                    new SysIdRoutine.Config(),
+                    new SysIdRoutine.Mechanism(
+                            (volts) -> {
+                                for (SwerveModule m : this.modules) {
+                                    m.setVolts(volts.in(Volts));
+                                }
+                            },
+                            null,
+                            this));
+
     public SwerveSubsystem() {
         this.resetGyro();
         this.modules =
                 new SwerveModule[] {
-                    new SwerveModule(SwerveConstants.FRONT_RIGHT_CONFIG),
                     new SwerveModule(SwerveConstants.FRONT_LEFT_CONFIG),
-                    new SwerveModule(SwerveConstants.BACK_RIGHT_CONFIG),
-                    new SwerveModule(SwerveConstants.BACK_LEFT_CONFIG)
+                    new SwerveModule(SwerveConstants.FRONT_RIGHT_CONFIG),
+                    new SwerveModule(SwerveConstants.BACK_LEFT_CONFIG),
+                    new SwerveModule(SwerveConstants.BACK_RIGHT_CONFIG)
                 };
 
         this.swerveDriveOdometry =
@@ -84,7 +102,7 @@ public class SwerveSubsystem extends SubsystemBase {
                                                 ? slewRateLimiterRotaional.calculate(rotation)
                                                 : rotation));
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, maxSpeed.get());
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, maxModuleSpeed.get());
         for (SwerveModule m : modules) {
             m.setDesiredState(states[m.getModuleNumber()]);
         }
@@ -151,7 +169,7 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, this.maxSpeed.get());
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, this.maxModuleSpeed.get());
         for (SwerveModule m : this.modules) {
             m.setDesiredState(desiredStates[m.getModuleNumber()]);
         }
@@ -172,6 +190,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public SwerveModule getModule(int id) {
         return this.modules[id];
+    }
+
+    public Command runDriveQuasiTest(Direction direction) {
+        return driveRoutine.quasistatic(direction);
+    }
+
+    public Command runDriveDynamTest(Direction direction) {
+        return driveRoutine.dynamic(direction);
     }
 
     @Override

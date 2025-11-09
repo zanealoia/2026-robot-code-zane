@@ -42,6 +42,10 @@ public class CtreConfigs {
         swerveTurningFXConfig.Feedback.SensorToMechanismRatio = SwerveConstants.TURN_GEAR_RATIO;
         swerveTurningFXConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
+        swerveTurningFXConfig.Slot0.kP = 0.0;
+        swerveTurningFXConfig.Slot0.kI = 0.0;
+        swerveTurningFXConfig.Slot0.kD = 0.0;
+
         /* Current limiting */
         swerveTurningFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         swerveTurningFXConfig.CurrentLimits.SupplyCurrentLimit = tCurrentLimit.get();
@@ -68,7 +72,7 @@ public class CtreConfigs {
         //         break;
         // }
 
-        swerveDriveFXConfig.Feedback.SensorToMechanismRatio = SwerveConstants.DRIVE_GEAR_RATIO_R1;
+        swerveDriveFXConfig.Feedback.SensorToMechanismRatio = SwerveConstants.DRIVE_GEAR_RATIO_R2;
 
         /** Current limiting */
         swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;

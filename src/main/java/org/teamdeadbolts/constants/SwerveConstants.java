@@ -16,7 +16,7 @@ public class SwerveConstants {
     public static final SensorDirectionValue SENSOR_DIRECTION =
             SensorDirectionValue.Clockwise_Positive;
     /* Turning constants */
-    public static final InvertedValue TURN_INVERTED_MODE = InvertedValue.Clockwise_Positive;
+    public static final InvertedValue TURN_INVERTED_MODE = InvertedValue.CounterClockwise_Positive;
     public static final NeutralModeValue TURN_NEUTRAL_MODE = NeutralModeValue.Brake;
     public static final double TURN_GEAR_RATIO = 287 / 11;
 
@@ -29,7 +29,7 @@ public class SwerveConstants {
 
     /* Module constants */
     public static final SwerveModuleConfig FRONT_LEFT_CONFIG =
-            new SwerveModuleConfig(0, Rotation2d.fromDegrees(-47.109), 0, 1, 2);
+            new SwerveModuleConfig(0, Rotation2d.fromDegrees(-47.109 + 180), 0, 1, 2);
     public static final SwerveModuleConfig FRONT_RIGHT_CONFIG =
             new SwerveModuleConfig(1, Rotation2d.fromDegrees(162.334), 3, 4, 5);
     public static final SwerveModuleConfig BACK_LEFT_CONFIG =
@@ -40,8 +40,8 @@ public class SwerveConstants {
     /* Kinematics */
     public static final SwerveDriveKinematics SWERVE_KINEMATICS =
             new SwerveDriveKinematics(
-                    new Translation2d(CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0),
-                    new Translation2d(CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0),
-                    new Translation2d(-CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0),
-                    new Translation2d(-CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0));
+                    new Translation2d(CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0), // Front Left (B)
+                    new Translation2d(CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Front Right (A)
+                    new Translation2d(-CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0), // Back Left (B)
+                    new Translation2d(-CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0)); // Back Right (A)
 }
