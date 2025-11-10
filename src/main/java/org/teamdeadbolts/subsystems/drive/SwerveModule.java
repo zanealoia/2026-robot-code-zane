@@ -10,10 +10,10 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.utils.CtreConfigs;
 import org.teamdeadbolts.utils.MathUtils;
+import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class SwerveModule {
     private int moduleNumber;
@@ -24,42 +24,42 @@ public class SwerveModule {
     private CANcoder encoder;
 
     /** Tuning values */
-    private final LoggedNetworkNumber dFFkS =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKS", 0.0);
+    private final SavedLoggedNetworkNumber dFFkS =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKS", 0.0);
 
-    private final LoggedNetworkNumber dFFkV =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKV", 0.0);
+    private final SavedLoggedNetworkNumber dFFkV =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKV", 0.0);
     private final SimpleMotorFeedforward driveFF =
             new SimpleMotorFeedforward(dFFkS.get(), dFFkS.get());
 
-    private final LoggedNetworkNumber tFFkS =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/FeedforwardKS", 0.0);
-    private final LoggedNetworkNumber tFFkV =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/FeedforwardKV", 0.0);
+    private final SavedLoggedNetworkNumber tFFkS =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/FeedforwardKS", 0.0);
+    private final SavedLoggedNetworkNumber tFFkV =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/FeedforwardKV", 0.0);
     private final SimpleMotorFeedforward turnFF =
             new SimpleMotorFeedforward(tFFkS.get(), tFFkV.get());
 
-    private static final LoggedNetworkNumber dP =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/kP", 0.0);
-    private static final LoggedNetworkNumber dI =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/kI", 0.0);
-    private static final LoggedNetworkNumber dD =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/kD", 0.0);
-    private static final LoggedNetworkNumber dMaxVel =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/MaxVelocity", 0.0);
-    private static final LoggedNetworkNumber dMaxAccel =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/MaxAcceleration", 0.0);
+    private static final SavedLoggedNetworkNumber dP =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kP", 0.0);
+    private static final SavedLoggedNetworkNumber dI =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kI", 0.0);
+    private static final SavedLoggedNetworkNumber dD =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kD", 0.0);
+    private static final SavedLoggedNetworkNumber dMaxVel =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/MaxVelocity", 0.0);
+    private static final SavedLoggedNetworkNumber dMaxAccel =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/MaxAcceleration", 0.0);
 
-    private static final LoggedNetworkNumber tP =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/kP", 0.0);
-    private static final LoggedNetworkNumber tI =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/kI", 0.0);
-    private static final LoggedNetworkNumber tD =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/kD", 0.0);
-    private static final LoggedNetworkNumber tMaxVel =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/MaxVelocity", 0.0);
-    private static final LoggedNetworkNumber tMaxAccel =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/MaxAcceleration", 0.0);
+    private static final SavedLoggedNetworkNumber tP =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kP", 0.0);
+    private static final SavedLoggedNetworkNumber tI =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kI", 0.0);
+    private static final SavedLoggedNetworkNumber tD =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kD", 0.0);
+    private static final SavedLoggedNetworkNumber tMaxVel =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/MaxVelocity", 0.0);
+    private static final SavedLoggedNetworkNumber tMaxAccel =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/MaxAcceleration", 0.0);
 
     /* PID */
     private ProfiledPIDController tProfiledPIDController =

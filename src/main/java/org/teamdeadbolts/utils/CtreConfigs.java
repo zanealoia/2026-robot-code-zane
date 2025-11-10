@@ -3,13 +3,12 @@ package org.teamdeadbolts.utils;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 import org.teamdeadbolts.constants.SwerveConstants;
+import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 /**
  * Configuration for CTRE devices
  */
-@SuppressWarnings("unchecked")
 public class CtreConfigs {
     /* Confgis */
     /* Swerve */
@@ -18,12 +17,12 @@ public class CtreConfigs {
     public static CANcoderConfiguration swerveCANcoderConfiguration = new CANcoderConfiguration();
 
     /* Trun motor tuning values */
-    private static final LoggedNetworkNumber tCurrentLimit =
-            new LoggedNetworkNumber("Tuning/Swerve/Turn/CurrentLimit", 0.0);
+    private static final SavedLoggedNetworkNumber tCurrentLimit =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/CurrentLimit", 0.0);
 
     /* Drive motor tuning values */
-    private static final LoggedNetworkNumber dCurrentLimit =
-            new LoggedNetworkNumber("Tuning/Swerve/Drive/CurrentLimit", 0.0);
+    private static final SavedLoggedNetworkNumber dCurrentLimit =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/CurrentLimit", 0.0);
 
     // private static final LoggedDashboardChooser dGearRatio =
     // new LoggedDashboardChooser<Integer>("Tuning/Swerve/Drive/GearRatio");

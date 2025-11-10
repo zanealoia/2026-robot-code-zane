@@ -6,10 +6,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 import org.teamdeadbolts.commands.DriveCommand;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.utils.CtreConfigs;
+import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class RobotContainer {
 
@@ -17,14 +17,14 @@ public class RobotContainer {
 
     private CommandXboxController primaryController = new CommandXboxController(0);
 
-    private LoggedNetworkNumber controllerDeadband =
-            new LoggedNetworkNumber("Tuning/Drive/ControllerDeadband", 0.08);
+    private SavedLoggedNetworkNumber controllerDeadband =
+            new SavedLoggedNetworkNumber("Tuning/Drive/ControllerDeadband", 0.08);
 
-    private LoggedNetworkNumber maxRobotSpeed =
-            new LoggedNetworkNumber("Tuning/Drive/MaxRobotSpeed", 1.0);
+    private SavedLoggedNetworkNumber maxRobotSpeed =
+            new SavedLoggedNetworkNumber("Tuning/Drive/MaxRobotSpeed", 1.0);
 
-    private LoggedNetworkNumber maxRobotAnglarSpeed =
-            new LoggedNetworkNumber("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
+    private SavedLoggedNetworkNumber maxRobotAnglarSpeed =
+            new SavedLoggedNetworkNumber("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
 
     public RobotContainer() {
         configureBindings();

@@ -18,8 +18,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 import org.teamdeadbolts.constants.SwerveConstants;
+import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class SwerveSubsystem extends SubsystemBase {
     private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
@@ -29,12 +29,12 @@ public class SwerveSubsystem extends SubsystemBase {
     private SlewRateLimiter slewRateLimiterTranslationalY;
     private SlewRateLimiter slewRateLimiterRotaional;
 
-    private LoggedNetworkNumber maxModuleSpeed =
-            new LoggedNetworkNumber("Tuning/Swerve/MaxModuleSpeed", 1.0);
-    private LoggedNetworkNumber slewRateTranslational =
-            new LoggedNetworkNumber("Tuning/Swerve/TranslationSlew", 1.0);
-    private LoggedNetworkNumber slewRateRotaional =
-            new LoggedNetworkNumber("Tuning/Swerve/RotationSlew", 1.0);
+    private SavedLoggedNetworkNumber maxModuleSpeed =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/MaxModuleSpeed", 1.0);
+    private SavedLoggedNetworkNumber slewRateTranslational =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/TranslationSlew", 1.0);
+    private SavedLoggedNetworkNumber slewRateRotaional =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/RotationSlew", 1.0);
 
     private SysIdRoutine driveRoutine =
             new SysIdRoutine(
