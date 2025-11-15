@@ -35,7 +35,7 @@ public class ConfigManager {
                     new ConfigManager(
                             Path.of(
                                     Filesystem.getDeployDirectory().toPath().toString(),
-                                    "configs/"));
+                                    "../configs/"));
         }
 
         return INSTANCE;
@@ -69,6 +69,7 @@ public class ConfigManager {
      */
     public void set(String key, Object value) {
         this.currConfig.values.put(key, value);
+        this.saveCurrentVersion();
     }
 
     public boolean contains(String key) {

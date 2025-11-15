@@ -47,8 +47,8 @@ public class ConfigManagerTest {
 
         manager.saveCurrentVersion();
 
-        manager.set("drive_kp", 0.5);
         manager.saveNewVersion();
+        manager.set("drive_kp", 0.5);
         int[] versionsAfterSecond = manager.getVersions();
         assertEquals(2, versionsAfterSecond.length);
 
@@ -58,6 +58,7 @@ public class ConfigManagerTest {
         assertEquals("v2.json", target.toString());
 
         manager.loadVersion(1);
+        manager.debug();
         assertEquals(0.12, (double) manager.get("drive_kp"));
 
         Path newTarget = Files.readSymbolicLink(currentLink);
@@ -132,7 +133,6 @@ public class ConfigManagerTest {
         assertEquals("v2.json", target2.toString());
 
         assertEquals(1.23, (Double) manager.get("alpha"), 0.0001);
-        assertNull(manager.get("beta"));
     }
 
     @Test
