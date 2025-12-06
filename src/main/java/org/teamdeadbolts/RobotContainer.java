@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.teamdeadbolts.commands.DriveCommand;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.utils.CtreConfigs;
@@ -25,6 +26,9 @@ public class RobotContainer {
 
     private SavedLoggedNetworkNumber maxRobotAnglarSpeed =
             new SavedLoggedNetworkNumber("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
+
+    private SavedLoggedNetworkNumber testVolts =
+            new SavedLoggedNetworkNumber("Tuning/Drive/TestVolts", 0.0);
 
     public RobotContainer() {
         configureBindings();
@@ -46,7 +50,7 @@ public class RobotContainer {
                                         * maxRobotSpeed.get(),
                         () ->
                                 MathUtil.applyDeadband(
-                                                primaryController.getRightX(),
+                                                -primaryController.getRightX(),
                                                 controllerDeadband.get())
                                         * Math.toRadians(maxRobotAnglarSpeed.get()),
                         true));
@@ -68,6 +72,20 @@ public class RobotContainer {
         primaryController
                 .x()
                 .whileTrue(new RunCommand(() -> swerveSubsystem.resetGyro(), swerveSubsystem));
+
+        primaryController
+                .y()
+                .whileTrue(
+                        new RunCommand(
+                                () -> swerveSubsystem.getModule(0).setVolts(testVolts.get()),
+                                swerveSubsystem));
+
+        primaryController.povUp().whileTrue(swerveSubsystem.runTurnDynamTest(Direction.kForward));
+        primaryController
+                .povRight()
+                .whileTrue(swerveSubsystem.runTurnQuasiTest(Direction.kForward));
+        primaryController.povDown().whileTrue(swerveSubsystem.runTurnDynamTest(Direction.kReverse));
+        primaryController.povLeft().whileTrue(swerveSubsystem.runTurnQuasiTest(Direction.kReverse));
     }
 
     public Command getAutonomousCommand() {

@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.utils.CtreConfigs;
@@ -26,17 +27,19 @@ public class SwerveModule {
 
     /** Tuning values */
     private final SavedLoggedNetworkNumber dFFkS =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKS", 0.0);
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kS", 0.0);
 
     private final SavedLoggedNetworkNumber dFFkV =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/FeedforwardKV", 0.0);
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kV", 0.0);
+    private final SavedLoggedNetworkNumber dFFkA =
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kA", 0.0);
     private final SimpleMotorFeedforward driveFF =
-            new SimpleMotorFeedforward(dFFkS.get(), dFFkS.get());
+            new SimpleMotorFeedforward(dFFkS.get(), dFFkS.get(), dFFkA.get());
 
     private final SavedLoggedNetworkNumber tFFkS =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/FeedforwardKS", 0.0);
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kS", 0.0);
     private final SavedLoggedNetworkNumber tFFkV =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/FeedforwardKV", 0.0);
+            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kV", 0.0);
     private final SimpleMotorFeedforward turnFF =
             new SimpleMotorFeedforward(tFFkS.get(), tFFkV.get());
 
@@ -94,6 +97,7 @@ public class SwerveModule {
 
         this.driveFF.setKs(dFFkS.get());
         this.driveFF.setKv(dFFkV.get());
+        this.driveFF.setKa(dFFkA.get());
 
         this.turnFF.setKs(tFFkS.get());
         this.turnFF.setKv(tFFkV.get());
@@ -132,7 +136,7 @@ public class SwerveModule {
         Logger.recordOutput("Swerve/Module " + moduleNumber + "/TargetAngle", angle.getDegrees());
         Logger.recordOutput(
                 "Swerve/Module " + moduleNumber + "/TargetAngleRaw",
-                angle.minus(offset).getDegrees());
+                angle.getDegrees() - offset.getDegrees());
 
         this.targetAngle = angle;
     }
@@ -142,14 +146,14 @@ public class SwerveModule {
      */
     public Rotation2d getRotation() {
         return Rotation2d.fromRotations(
-                encoder.getAbsolutePosition().getValueAsDouble() - offset.getRotations());
+                encoder.getAbsolutePosition().getValueAsDouble() + offset.getRotations());
     }
 
     /**
      * Reset the module to the absoulte position
      */
     public void resetToAbs() {
-        double corrected = encoder.getAbsolutePosition().getValueAsDouble() - offset.getRotations();
+        double corrected = encoder.getAbsolutePosition().getValueAsDouble() + offset.getRotations();
         turningMotor.setPosition(corrected);
     }
 
@@ -185,6 +189,22 @@ public class SwerveModule {
         this.driveMotor.setVoltage(volts);
     }
 
+    public void setTurnVolts(double volts) {
+        this.turningMotor.setVoltage(volts);
+    }
+
+    public double getTurnPosition() {
+        return this.turningMotor.getPosition().getValueAsDouble();
+    }
+
+    public double getTurnVelocity() {
+        return this.turningMotor.getVelocity().getValueAsDouble();
+    }
+
+    public double getTurnVoltage() {
+        return this.turningMotor.getMotorVoltage().getValueAsDouble();
+    }
+
     public void tick() {
         double turnMeasurement = this.getRotation().getRadians();
         double turnSetpoint = this.targetAngle.getRadians();
@@ -200,7 +220,7 @@ public class SwerveModule {
                         SwerveConstants.WHEEL_CIRCUMFERENCE);
 
         double drivePidOut = dPIDController.calculate(driveMeasurement, this.targetSpeedMps);
-        double driveFFOut = driveFF.calculateWithVelocities(driveMeasurement, this.targetSpeedMps);
+        double driveFFOut = driveFF.calculate(this.targetSpeedMps);
         double driveVoltage = drivePidOut + driveFFOut;
         driveMotor.setVoltage(driveVoltage);
 
@@ -222,9 +242,13 @@ public class SwerveModule {
                 "Swerve/Module " + moduleNumber + "/TurnPIDError",
                 tProfiledPIDController.getPositionError());
 
-        Logger.recordOutput("Swerve/Module " + moduleNumber + "/TurnPIDSetpoint", turnSetpoint);
+        Logger.recordOutput(
+                "Swerve/Module " + moduleNumber + "/TurnPIDSetpoint",
+                Units.radiansToDegrees(turnSetpoint));
 
-        Logger.recordOutput("Swerve/Module " + moduleNumber + "/TurnMeasurement", turnMeasurement);
+        Logger.recordOutput(
+                "Swerve/Module " + moduleNumber + "/TurnMeasurementDeg",
+                this.getRotation().getDegrees());
     }
 
     /**

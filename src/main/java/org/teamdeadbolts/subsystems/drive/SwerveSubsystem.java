@@ -1,6 +1,9 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.studica.frc.AHRS;
@@ -13,6 +16,10 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -45,7 +52,42 @@ public class SwerveSubsystem extends SubsystemBase {
                                     m.setVolts(volts.in(Volts));
                                 }
                             },
-                            null,
+                            (log) -> {
+                                for (SwerveModule m : this.modules) {
+                                    log.motor(getName() + "-" + m.getModuleNumber())
+                                            .linearVelocity(
+                                                    LinearVelocity.ofBaseUnits(
+                                                            m.getState().speedMetersPerSecond,
+                                                            MetersPerSecond));
+                                }
+                            },
+                            this));
+
+    private SysIdRoutine turnRoutine =
+            new SysIdRoutine(
+                    new SysIdRoutine.Config(),
+                    new SysIdRoutine.Mechanism(
+                            (volts) -> {
+                                this.modules[0].setTurnVolts(volts.in(Volts));
+                            },
+                            (log) -> {
+                                SwerveModule m = modules[0];
+                                log.motor(getName() + "-" + m.getModuleNumber())
+                                        .angularPosition(
+                                                Angle.ofBaseUnits(
+                                                        m.getPosition().angle.getDegrees(),
+                                                        Degrees));
+
+                                log.motor(getName() + "-" + m.getModuleNumber())
+                                        .angularVelocity(
+                                                AngularVelocity.ofBaseUnits(
+                                                        m.getTurnVelocity(), RotationsPerSecond));
+                                log.motor(getName() + "-" + m.getModuleNumber())
+                                        .voltage(Voltage.ofBaseUnits(m.getTurnVoltage(), Volts));
+                                // log.motor(getName() + "-" +
+                                // m.getModuleNumber()).angularVelocity(AngularVelocity.ofBaseUnits(m.getState().angle, null))
+
+                            },
                             this));
 
     public SwerveSubsystem() {
@@ -198,6 +240,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public Command runDriveDynamTest(Direction direction) {
         return driveRoutine.dynamic(direction);
+    }
+
+    public Command runTurnQuasiTest(Direction direction) {
+        return turnRoutine.quasistatic(direction);
+    }
+
+    public Command runTurnDynamTest(Direction direction) {
+        return turnRoutine.dynamic(direction);
     }
 
     @Override
