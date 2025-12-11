@@ -132,7 +132,7 @@ public class SwerveModule {
      * Set the angle
      * @param angle The angle as a {@link Rotation2d}
      */
-    private void setAngle(Rotation2d angle) {
+    public void setAngle(Rotation2d angle) {
         Logger.recordOutput("Swerve/Module " + moduleNumber + "/TargetAngle", angle.getDegrees());
         Logger.recordOutput(
                 "Swerve/Module " + moduleNumber + "/TargetAngleRaw",
