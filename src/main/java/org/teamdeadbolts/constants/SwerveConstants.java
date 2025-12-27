@@ -14,7 +14,7 @@ public class SwerveConstants {
     public static final double WHEEL_CIRCUMFERENCE = Units.inchesToMeters(2.25 * Math.PI);
     public static final double CHASSIS_SIZE = Units.inchesToMeters(30);
     public static final SensorDirectionValue SENSOR_DIRECTION =
-            SensorDirectionValue.Clockwise_Positive;
+            SensorDirectionValue.CounterClockwise_Positive;
     /* Turning constants */
     public static final InvertedValue TURN_INVERTED_MODE = InvertedValue.CounterClockwise_Positive;
     public static final NeutralModeValue TURN_NEUTRAL_MODE = NeutralModeValue.Brake;
@@ -29,19 +29,19 @@ public class SwerveConstants {
 
     /* Module constants */
     public static final SwerveModuleConfig FRONT_LEFT_CONFIG =
-            new SwerveModuleConfig(0, Rotation2d.fromDegrees(50.198 - 90), 0, 1, 2);
+            new SwerveModuleConfig(0, Rotation2d.fromDegrees(51.8), 0, 1, 2);
     public static final SwerveModuleConfig FRONT_RIGHT_CONFIG =
-            new SwerveModuleConfig(1, Rotation2d.fromDegrees(-8.1), 3, 4, 5);
+            new SwerveModuleConfig(1, Rotation2d.fromDegrees(105.5 - 90), 3, 4, 5);
     public static final SwerveModuleConfig BACK_LEFT_CONFIG =
-            new SwerveModuleConfig(2, Rotation2d.fromDegrees(56.77 - 90), 6, 7, 8);
+            new SwerveModuleConfig(2, Rotation2d.fromDegrees(-56.3 + 90), 6, 7, 8);
     public static final SwerveModuleConfig BACK_RIGHT_CONFIG =
-            new SwerveModuleConfig(3, Rotation2d.fromDegrees(-10.3), 9, 10, 11);
+            new SwerveModuleConfig(3, Rotation2d.fromDegrees(-171.7 + 180), 9, 10, 11);
 
     /* Kinematics */
     public static final SwerveDriveKinematics SWERVE_KINEMATICS =
             new SwerveDriveKinematics(
-                    new Translation2d(CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0), // Front Left (B)
-                    new Translation2d(CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Front Right (A)
-                    new Translation2d(-CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0), // Back Left (B)
-                    new Translation2d(-CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0)); // Back Right (A)
+                    new Translation2d(CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Front Left (B)
+                    new Translation2d(CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0), // Front Right (A)
+                    new Translation2d(-CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Back Left (B)
+                    new Translation2d(-CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0)); // Back Right (A)
 }

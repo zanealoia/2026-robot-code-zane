@@ -7,9 +7,12 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import java.util.ArrayList;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
+import org.teamdeadbolts.utils.PhotonCameraWrapper;
+import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkBoolean;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class PoseEstimator {
@@ -19,6 +22,8 @@ public class PoseEstimator {
     private SwerveSubsystem swerveSubsystem;
 
     private SwerveDrivePoseEstimator3d poseEstimator3d;
+
+    private ArrayList<PhotonCameraWrapper> visionCameras = new ArrayList<>();
 
     /* Tuning values */
     SavedLoggedNetworkNumber positionStdDevX =
@@ -39,6 +44,9 @@ public class PoseEstimator {
             new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionStdDevZ", 0.05);
     SavedLoggedNetworkNumber visionHeadingStdDev =
             new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionHeadingStdDev", 0.05);
+
+    SavedLoggedNetworkBoolean enableVision =
+            new SavedLoggedNetworkBoolean("Tuning/PoseEstimator/EnableVision", true);
 
     public PoseEstimator(SwerveSubsystem swerveSubsystem) {
         this.poseEstimator3d =
@@ -72,8 +80,22 @@ public class PoseEstimator {
                 pose);
     }
 
+    public void addCamera(PhotonCameraWrapper camera) {
+        this.visionCameras.add(camera);
+    }
+
     public void update() {
         Logger.recordOutput("PoseEstimator/Pose3d", estimatedPose);
         robotState.setRobotPose(estimatedPose);
+
+        for (PhotonCameraWrapper c : this.visionCameras) {
+            c.update();
+            if (c.getAvgFieldRelativePose().isPresent()) {
+                if (enableVision.get()) {
+                    this.poseEstimator3d.addVisionMeasurement(
+                            c.getAvgFieldRelativePose().get(), c.getTimestamp());
+                }
+            }
+        }
     }
 }

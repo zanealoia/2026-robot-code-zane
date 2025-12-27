@@ -51,8 +51,7 @@ public class SwerveSubsystem extends SubsystemBase {
                                     m.setVolts(volts.in(Volts));
                                     if (m.getModuleNumber() % 2 == 0)
                                         m.setAngle(Rotation2d.fromDegrees(0));
-                                    else
-                                        m.setAngle(Rotation2d.fromDegrees(180));
+                                    else m.setAngle(Rotation2d.fromDegrees(180));
                                 }
                             },
                             (log) -> {
@@ -107,6 +106,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 };
 
         this.refreshTuning();
+        // this.gyro.
     }
 
     /**

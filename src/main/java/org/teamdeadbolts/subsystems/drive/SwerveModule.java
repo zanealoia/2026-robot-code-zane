@@ -209,7 +209,7 @@ public class SwerveModule {
         double turnMeasurement = this.getRotation().getRadians();
         double turnSetpoint = this.targetAngle.getRadians();
 
-        double turnPidOut = -tProfiledPIDController.calculate(turnMeasurement, turnSetpoint);
+        double turnPidOut = tProfiledPIDController.calculate(turnMeasurement, turnSetpoint);
         double turnFFOut = this.turnFF.calculate(tProfiledPIDController.getSetpoint().velocity);
         double turnVoltage = turnPidOut + turnFFOut;
         turningMotor.setVoltage(turnVoltage);

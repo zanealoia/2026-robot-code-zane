@@ -4,6 +4,7 @@ package org.teamdeadbolts;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -14,6 +15,7 @@ import org.teamdeadbolts.commands.DriveToPoint;
 import org.teamdeadbolts.state.PoseEstimator;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.utils.CtreConfigs;
+import org.teamdeadbolts.utils.PhotonCameraWrapper;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class RobotContainer {
@@ -37,6 +39,7 @@ public class RobotContainer {
             new SavedLoggedNetworkNumber("Tuning/Drive/TestVolts", 0.0);
 
     public RobotContainer() {
+        poseEstimator.addCamera(new PhotonCameraWrapper("CenterCam", new Transform3d()));
         configureBindings();
     }
 
