@@ -1,9 +1,12 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.commands;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,31 +21,55 @@ public class DriveToPoint extends Command {
     private RobotState robotState = RobotState.getInstance();
 
     /** Translation tuning values */
+    private SavedLoggedNetworkNumber tP =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/kP", 0.0);
+
+    private SavedLoggedNetworkNumber tI =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/kI", 0.0);
+    private SavedLoggedNetworkNumber tD =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/kD", 0.0);
     private SavedLoggedNetworkNumber tMaxVel =
             new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/MaxVelMPS", 0.0);
 
     private SavedLoggedNetworkNumber tMaxAcc =
             new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/MaxAccMPS", 0.0);
-    private SavedLoggedNetworkNumber tAdvance =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/StepSize", 0.0);
 
     /** Rotation tuning values */
+    private SavedLoggedNetworkNumber rP =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/kP", 0.0);
+
+    private SavedLoggedNetworkNumber rI =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/kI", 0.0);
+    private SavedLoggedNetworkNumber rD =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/kD", 0.0);
     private SavedLoggedNetworkNumber rMaxVel =
             new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/MaxVelDPS", 0.0);
 
     private SavedLoggedNetworkNumber rMaxAcc =
             new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/MaxAccDPS", 0.0);
-    private SavedLoggedNetworkNumber rAdvance =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/StepSize", 0.0);
 
-    private TrapezoidProfile tProfile =
-            new TrapezoidProfile(new Constraints(tMaxVel.get(), tMaxAcc.get()));
+    /** Cross track */
+    private SavedLoggedNetworkNumber cP =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Cross/kP", 0.0);
 
-    private TrapezoidProfile rProfile =
-            new TrapezoidProfile(new Constraints(rMaxVel.get(), rMaxAcc.get()));
+    private SavedLoggedNetworkNumber cI =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Cross/kI", 0.0);
+    private SavedLoggedNetworkNumber cD =
+            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Cross/kD", 0.0);
+
+    private final ProfiledPIDController tController =
+            new ProfiledPIDController(tP.get(), tI.get(), tD.get(), new Constraints(0, 0));
+
+    private final ProfiledPIDController thetaController =
+            new ProfiledPIDController(rP.get(), rI.get(), rD.get(), new Constraints(0, 0));
+
+    private final PIDController lateralController = new PIDController(cP.get(), cI.get(), cD.get());
 
     private Pose2d target;
     private Pose2d tolerance;
+
+    private Translation2d startPoint;
+    double totalDistance;
 
     /**
      * Command to drive to a point
@@ -61,76 +88,97 @@ public class DriveToPoint extends Command {
     @Override
     public void initialize() {
         /** Refresh pid values from nt */
-        tProfile = new TrapezoidProfile(new Constraints(tMaxVel.get(), tMaxAcc.get()));
-        rProfile =
-                new TrapezoidProfile(
-                        new Constraints(
-                                Units.degreesToRadians(rMaxVel.get()),
-                                Units.degreesToRadians(rMaxAcc.get())));
+        Constraints transConstraints = new Constraints(tMaxVel.get(), tMaxAcc.get());
+        Constraints rotConstraints =
+                new Constraints(
+                        Units.degreesToRadians(rMaxVel.get()),
+                        Units.degreesToRadians(rMaxAcc.get()));
+
+        tController.setConstraints(transConstraints);
+        tController.setPID(tP.get(), tI.get(), tD.get());
+
+        thetaController.setConstraints(rotConstraints);
+        thetaController.setPID(rP.get(), rI.get(), rD.get());
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        lateralController.setPID(cP.get(), cI.get(), cD.get());
+
+        Pose2d currentPose = this.robotState.getRobotPose().toPose2d();
+
+        startPoint = currentPose.getTranslation();
+        totalDistance = startPoint.getDistance(target.getTranslation());
+
+        Rotation2d pathHeading = target.getTranslation().minus(startPoint).getAngle();
+
+        ChassisSpeeds speeds = this.robotState.getRobotVelocities();
+        double velAlongPath =
+                speeds.vxMetersPerSecond * pathHeading.getCos()
+                        + speeds.vyMetersPerSecond * pathHeading.getSin();
+
+        tController.reset(0, velAlongPath);
+        thetaController.reset(currentPose.getRotation().getRadians(), speeds.omegaRadiansPerSecond);
+        lateralController.reset();
     }
 
     @Override
     public void execute() {
-        Pose2d currentPose = robotState.getRobotPose().toPose2d();
-        double deltaX = target.getX() - currentPose.getX();
-        double deltaY = target.getY() - currentPose.getY();
-        double distance = Math.hypot(deltaX, deltaY);
+        Pose2d currentPose = this.robotState.getRobotPose().toPose2d();
+        Translation2d currOffset = currentPose.getTranslation().minus(startPoint);
 
-        double tTrapCalc =
-                -this.tProfile.calculate(
-                                tAdvance.get(),
-                                new TrapezoidProfile.State(
-                                        distance,
-                                        -Math.hypot(
-                                                this.robotState.getRobotVelocities()
-                                                        .vxMetersPerSecond,
-                                                this.robotState.getRobotVelocities()
-                                                        .vyMetersPerSecond)),
-                                new TrapezoidProfile.State(0.0, 0.0))
-                        .velocity;
+        Rotation2d pathHeading = target.getTranslation().minus(startPoint).getAngle();
 
-        double angle = Math.atan2(deltaY, deltaX);
-        double xVel = tTrapCalc * Math.cos(angle);
-        double yVel = tTrapCalc * Math.sin(angle);
+        double progress =
+                currOffset.getX() * pathHeading.getCos() + currOffset.getY() * pathHeading.getSin();
 
-        double rotDistance =
-                this.target.getRotation().minus(currentPose.getRotation()).getRadians();
+        double crossTrackError =
+                -currOffset.getX() * pathHeading.getSin()
+                        + currOffset.getY() * pathHeading.getCos();
 
-        // double rotGoal =
-        //         MathUtil.inputModulus(
-        //                 target.getRotation().getRadians() -
-        // currentPose.getRotation().getRadians(),
-        //                 -Math.PI,
-        //                 Math.PI);
-        double rotTrapCalc =
-                this.rProfile.calculate(
-                                rAdvance.get(),
-                                new TrapezoidProfile.State(
-                                        rotDistance,
-                                        this.robotState.getRobotVelocities().omegaRadiansPerSecond),
-                                new TrapezoidProfile.State(0.0, 0.0))
-                        .velocity;
+        double forwardVel = tController.calculate(progress, totalDistance);
+        double lateralVel = lateralController.calculate(crossTrackError, 0);
 
-        swerveSubsystem.drive(new Translation2d(xVel, yVel), rotTrapCalc, true, false);
+        double distanceRemaining = totalDistance - progress;
+        if (distanceRemaining < 0.1) {
+            lateralVel *= (distanceRemaining / 0.1);
+        }
+
+        double xVel = forwardVel * pathHeading.getCos() - lateralVel * pathHeading.getSin();
+        double yVel = forwardVel * pathHeading.getSin() + lateralVel * pathHeading.getCos();
+
+        double thetaVel =
+                thetaController.calculate(
+                        currentPose.getRotation().getRadians(), target.getRotation().getRadians());
+
+        swerveSubsystem.drive(new Translation2d(xVel, yVel), thetaVel, true, false);
 
         Logger.recordOutput("DriveToPoint/TargetPose", target);
-        Logger.recordOutput("DriveToPoint/DistanceToTarget", distance);
         Logger.recordOutput("DriveToPoint/XVelCmd", xVel);
         Logger.recordOutput("DriveToPoint/YVelCmd", yVel);
-        Logger.recordOutput("DriveToPoint/RotVelCmd", rotTrapCalc);
-
-        Logger.recordOutput("DriveToPoint/RotError", Units.radiansToDegrees(rotDistance));
-        // Logger.recordOutput("DriveToPoint/RotMeasurement", );
+        Logger.recordOutput("DriveToPoint/RotVelCmd", Units.radiansToDegrees(thetaVel));
+        Logger.recordOutput("DriveToPoint/LateralVelCmd", lateralVel);
+        Logger.recordOutput("DriveToPoint/ForwardVelCmd", forwardVel);
+        Logger.recordOutput("DriveToPoint/Progress", progress);
+        Logger.recordOutput("DriveToPoint/TransError", tController.getPositionError());
+        Logger.recordOutput("DriveToPoint/CrossTrackError", crossTrackError);
+        Logger.recordOutput(
+                "DriveToPoint/ThetaError",
+                Units.radiansToDegrees(thetaController.getPositionError()));
     }
 
     @Override
     public boolean isFinished() {
         Pose2d currentPose = robotState.getRobotPose().toPose2d();
-        boolean withinX = Math.abs(currentPose.getX() - target.getX()) <= tolerance.getX();
-        boolean withinY = Math.abs(currentPose.getY() - target.getY()) <= tolerance.getY();
-        boolean withinRotation =
-                Math.abs(currentPose.getRotation().getDegrees() - target.getRotation().getDegrees())
-                        <= tolerance.getRotation().getDegrees();
-        return withinX && withinY && withinRotation;
+        ChassisSpeeds speeds = robotState.getRobotVelocities();
+
+        double distToTarget = currentPose.getTranslation().getDistance(target.getTranslation());
+        boolean atTranslation = distToTarget <= tolerance.getTranslation().getNorm();
+
+        double angleError =
+                Math.abs(currentPose.getRotation().minus(target.getRotation()).getDegrees());
+        boolean atRotation = angleError <= tolerance.getRotation().getDegrees();
+
+        boolean isSettled = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond) < 0.1;
+
+        return (tController.atGoal() || atTranslation) && atRotation && isSettled;
     }
 }

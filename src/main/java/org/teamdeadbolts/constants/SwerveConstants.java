@@ -11,7 +11,7 @@ import edu.wpi.first.math.util.Units;
 import org.teamdeadbolts.subsystems.drive.SwerveModule.SwerveModuleConfig;
 
 public class SwerveConstants {
-    public static final double WHEEL_CIRCUMFERENCE = Units.inchesToMeters(2.25 * Math.PI);
+    public static final double WHEEL_CIRCUMFERENCE = Units.inchesToMeters(2 * 2.25 * Math.PI);
     public static final double CHASSIS_SIZE = Units.inchesToMeters(30);
     public static final SensorDirectionValue SENSOR_DIRECTION =
             SensorDirectionValue.CounterClockwise_Positive;
@@ -21,7 +21,7 @@ public class SwerveConstants {
     public static final double TURN_GEAR_RATIO = 287 / 11;
 
     /* Driving constants */
-    public static final InvertedValue DRIVE_INVERTED_MODE = InvertedValue.Clockwise_Positive;
+    public static final InvertedValue DRIVE_INVERTED_MODE = InvertedValue.CounterClockwise_Positive;
     public static final NeutralModeValue DRIVE_NEUTRAL_MODE = NeutralModeValue.Brake;
     public static final double DRIVE_GEAR_RATIO_R1 = 7.03;
     public static final double DRIVE_GEAR_RATIO_R2 = 6.03;

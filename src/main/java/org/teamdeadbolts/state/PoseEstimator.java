@@ -7,11 +7,15 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.SwerveConstants;
+import org.teamdeadbolts.constants.VisionConstants;
+import org.teamdeadbolts.state.vision.VisionIO;
+import org.teamdeadbolts.state.vision.VisionIO.PoseObservation;
+import org.teamdeadbolts.state.vision.VisionIOCtxAutoLogged;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
-import org.teamdeadbolts.utils.PhotonCameraWrapper;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkBoolean;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
@@ -23,32 +27,37 @@ public class PoseEstimator {
 
     private SwerveDrivePoseEstimator3d poseEstimator3d;
 
-    private ArrayList<PhotonCameraWrapper> visionCameras = new ArrayList<>();
+    private VisionIOCtxAutoLogged[] ctxs;
+    private VisionIO[] ios;
 
     /* Tuning values */
-    SavedLoggedNetworkNumber positionStdDevX =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/PositionStdDevX", 0.05);
-    SavedLoggedNetworkNumber positionStdDevY =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/PositionStdDevY", 0.05);
-    SavedLoggedNetworkNumber positionStdDevZ =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/PositionStdDevZ", 0.05);
-    SavedLoggedNetworkNumber headingStdDev =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/HeadingStdDev", 0.05);
+    SavedLoggedNetworkNumber wheelTransStdDev =
+            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/WheelTransStdDev", 0.05);
+    SavedLoggedNetworkNumber wheelHeadingStdDev =
+            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/WheelHeadingStdDev", 0.05);
 
     /* Vision base std dev (sacles with distance) */
-    SavedLoggedNetworkNumber visionStdDevX =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionStdDevX", 0.05);
-    SavedLoggedNetworkNumber visionStdDevY =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionStdDevY", 0.05);
-    SavedLoggedNetworkNumber visionStdDevZ =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionStdDevZ", 0.05);
+    SavedLoggedNetworkNumber visionTransStdDev =
+            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionTransStdDev", 0.05);
     SavedLoggedNetworkNumber visionHeadingStdDev =
             new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionHeadingStdDev", 0.05);
+
+    // TODO
+    SavedLoggedNetworkNumber maxAmbiguity =
+            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/MaxAmbiguity", 0.5);
+
+    SavedLoggedNetworkNumber maxTagDist =
+            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/MaxTagDist", 0.5);
 
     SavedLoggedNetworkBoolean enableVision =
             new SavedLoggedNetworkBoolean("Tuning/PoseEstimator/EnableVision", true);
 
-    public PoseEstimator(SwerveSubsystem swerveSubsystem) {
+    public PoseEstimator(SwerveSubsystem swerveSubsystem, VisionIO... ios) {
+        this.ios = ios;
+        this.ctxs = new VisionIOCtxAutoLogged[ios.length];
+        for (int i = 0; i < ios.length; i++) {
+            this.ctxs[i] = new VisionIOCtxAutoLogged();
+        }
         this.poseEstimator3d =
                 new SwerveDrivePoseEstimator3d(
                         SwerveConstants.SWERVE_KINEMATICS,
@@ -56,14 +65,14 @@ public class PoseEstimator {
                         swerveSubsystem.getModulePositions(),
                         new Pose3d(),
                         VecBuilder.fill(
-                                positionStdDevX.get(),
-                                positionStdDevY.get(),
-                                positionStdDevZ.get(),
-                                headingStdDev.get()),
+                                wheelTransStdDev.get(),
+                                wheelTransStdDev.get(),
+                                wheelTransStdDev.get(),
+                                wheelHeadingStdDev.get()),
                         VecBuilder.fill(
-                                visionStdDevX.get(),
-                                visionStdDevY.get(),
-                                visionStdDevZ.get(),
+                                visionTransStdDev.get(),
+                                visionTransStdDev.get(),
+                                visionTransStdDev.get(),
                                 visionHeadingStdDev.get()));
         this.swerveSubsystem = swerveSubsystem;
         swerveSubsystem.setModulePositionCallback(this::updateFromSwerve);
@@ -80,22 +89,60 @@ public class PoseEstimator {
                 pose);
     }
 
-    public void addCamera(PhotonCameraWrapper camera) {
-        this.visionCameras.add(camera);
-    }
-
     public void update() {
         Logger.recordOutput("PoseEstimator/Pose3d", estimatedPose);
         robotState.setRobotPose(estimatedPose);
 
-        for (PhotonCameraWrapper c : this.visionCameras) {
-            c.update();
-            if (c.getAvgFieldRelativePose().isPresent()) {
-                if (enableVision.get()) {
-                    this.poseEstimator3d.addVisionMeasurement(
-                            c.getAvgFieldRelativePose().get(), c.getTimestamp());
+        for (int i = 0; i < ios.length; i++) {
+            ios[i].update(ctxs[i]);
+            Logger.processInputs("Vision/Camera " + i, ctxs[i]);
+        }
+
+        for (int index = 0; index < ctxs.length; index++) {
+            LinkedList<Pose3d> tagPoses = new LinkedList<>();
+            LinkedList<Pose3d> robotPoses = new LinkedList<>();
+
+            for (int tId : ctxs[index].tagIds) {
+                Optional<Pose3d> tagPose = VisionConstants.FIELD_LAYOUT.getTagPose(tId);
+                if (tagPose.isPresent()) {
+                    tagPoses.add(tagPose.get());
                 }
             }
+
+            for (PoseObservation observation : ctxs[index].observations) {
+                boolean acceptPose =
+                        observation.ambiguity() <= maxAmbiguity.get()
+                                && observation.tagDist() <= maxTagDist.get()
+                                && observation.pose().getX() > 0.0
+                                && observation.pose().getX()
+                                        < VisionConstants.FIELD_LAYOUT.getFieldLength()
+                                && observation.pose().getY() > 0.0
+                                && observation.pose().getY()
+                                        < VisionConstants.FIELD_LAYOUT.getFieldWidth();
+                if (acceptPose) {
+                    robotPoses.add(observation.pose());
+                }
+
+                if (enableVision.get()) {
+                    if (!acceptPose) continue;
+                    double stdDevFactor = Math.pow(observation.tagDist(), 1.5);
+                    double transStdDev = visionTransStdDev.get() * stdDevFactor;
+                    double headingStdDev = visionHeadingStdDev.get() * stdDevFactor;
+
+                    poseEstimator3d.addVisionMeasurement(
+                            observation.pose(),
+                            observation.timestamp(),
+                            VecBuilder.fill(transStdDev, transStdDev, transStdDev, headingStdDev));
+                }
+            }
+
+            // Logging
+            Logger.recordOutput(
+                    "Vision/Camera " + index + "/TagPoses",
+                    tagPoses.toArray(new Pose3d[tagPoses.size()]));
+            Logger.recordOutput(
+                    "Vision/Camera " + index + "/RobotPoses",
+                    robotPoses.toArray(new Pose3d[robotPoses.size()]));
         }
     }
 }

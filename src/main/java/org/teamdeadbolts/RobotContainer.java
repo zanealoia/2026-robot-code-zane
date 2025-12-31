@@ -4,7 +4,9 @@ package org.teamdeadbolts;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -13,9 +15,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.teamdeadbolts.commands.DriveCommand;
 import org.teamdeadbolts.commands.DriveToPoint;
 import org.teamdeadbolts.state.PoseEstimator;
+import org.teamdeadbolts.state.vision.VisionIOPhoton;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.utils.CtreConfigs;
-import org.teamdeadbolts.utils.PhotonCameraWrapper;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class RobotContainer {
@@ -24,7 +26,8 @@ public class RobotContainer {
 
     private CommandXboxController primaryController = new CommandXboxController(0);
 
-    private PoseEstimator poseEstimator = new PoseEstimator(swerveSubsystem);
+    private PoseEstimator poseEstimator =
+            new PoseEstimator(swerveSubsystem, new VisionIOPhoton("CenterCam", new Transform3d()));
 
     private SavedLoggedNetworkNumber controllerDeadband =
             new SavedLoggedNetworkNumber("Tuning/Drive/ControllerDeadband", 0.08);
@@ -35,20 +38,17 @@ public class RobotContainer {
     private SavedLoggedNetworkNumber maxRobotAnglarSpeed =
             new SavedLoggedNetworkNumber("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
 
-    private SavedLoggedNetworkNumber testVolts =
-            new SavedLoggedNetworkNumber("Tuning/Drive/TestVolts", 0.0);
-
     public RobotContainer() {
-        poseEstimator.addCamera(new PhotonCameraWrapper("CenterCam", new Transform3d()));
         configureBindings();
     }
 
     private void configureBindings() {
+        // Xbox controllers push "up" = neg valve so invert everything
         swerveSubsystem.setDefaultCommand(
                 new DriveCommand(
                         swerveSubsystem,
                         () ->
-                                MathUtil.applyDeadband(
+                                -MathUtil.applyDeadband(
                                                 primaryController.getLeftY(),
                                                 controllerDeadband.get())
                                         * maxRobotSpeed.get(),
@@ -58,8 +58,8 @@ public class RobotContainer {
                                                 controllerDeadband.get())
                                         * maxRobotSpeed.get(),
                         () ->
-                                MathUtil.applyDeadband(
-                                                -primaryController.getRightX(),
+                                -MathUtil.applyDeadband(
+                                                primaryController.getRightX(),
                                                 controllerDeadband.get())
                                         * Math.toRadians(maxRobotAnglarSpeed.get()),
                         true));
@@ -76,7 +76,14 @@ public class RobotContainer {
 
         primaryController
                 .b()
-                .whileTrue(new DriveToPoint(swerveSubsystem, new Pose2d(), new Pose2d()));
+                .whileTrue(
+                        new DriveToPoint(
+                                swerveSubsystem,
+                                new Pose2d(
+                                        new Translation2d(15.86, 1.93),
+                                        Rotation2d.fromDegrees(-56)),
+                                new Pose2d(
+                                        new Translation2d(0.01, 0.01), Rotation2d.fromDegrees(1))));
         primaryController
                 .x()
                 .whileTrue(new RunCommand(() -> swerveSubsystem.resetGyro(), swerveSubsystem));

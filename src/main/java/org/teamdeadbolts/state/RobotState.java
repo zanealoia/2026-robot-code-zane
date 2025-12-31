@@ -8,8 +8,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
  * Singleton class to hold the robot state
  */
 public class RobotState {
-    private Pose3d robotPose = new Pose3d();
-    private ChassisSpeeds robotSpeeds = new ChassisSpeeds();
+    private Pose3d robotPose = new Pose3d(); // Field pose of the robot
+    private ChassisSpeeds robotSpeeds = new ChassisSpeeds(); // Speed of the robot field rel
 
     private static RobotState INSTANCE = new RobotState();
 

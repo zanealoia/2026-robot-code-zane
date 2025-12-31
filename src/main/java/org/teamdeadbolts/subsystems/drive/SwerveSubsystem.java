@@ -14,11 +14,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -93,7 +95,7 @@ public class SwerveSubsystem extends SubsystemBase {
                             this));
 
     /* Callback that the swerve subsystem will update with module positions and gyro rotation */
-    private BiConsumer<SwerveModulePosition[], Rotation2d> modulePositionCallback;
+    private BiConsumer<SwerveModulePosition[], Rotation2d> modulePositionCallback = null;
 
     public SwerveSubsystem() {
         this.resetGyro();
@@ -106,7 +108,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 };
 
         this.refreshTuning();
-        // this.gyro.
+        CommandScheduler.getInstance().registerSubsystem(this);
     }
 
     /**
@@ -117,6 +119,9 @@ public class SwerveSubsystem extends SubsystemBase {
      */
     public void drive(
             Translation2d translation, double rotation, boolean fieldRelative, boolean slewRates) {
+        Logger.recordOutput("Swerve/CommandedVelocitiesTrans", translation);
+        Logger.recordOutput("Swerve/CommandedVelocitiesRot", Units.radiansToDegrees(rotation));
+
         SwerveModuleState[] states =
                 SwerveConstants.SWERVE_KINEMATICS.toSwerveModuleStates(
                         fieldRelative
@@ -164,7 +169,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return The rotation
      */
     public Rotation2d getGyroRotation() {
-        return Rotation2d.fromDegrees(gyro.getAngle());
+        return Rotation2d.fromDegrees(gyro.getAngle()).unaryMinus();
     }
 
     /**
@@ -255,11 +260,15 @@ public class SwerveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        this.modulePositionCallback.accept(getModulePositions(), getGyroRotation());
-        RobotState.getInstance().setRobotVelocities(getFieldRelativeChassisSpeeds());
+        Logger.recordOutput("Swerve/GyroRotationDeg", getGyroRotation().getDegrees());
+        if (this.modulePositionCallback != null)
+            this.modulePositionCallback.accept(getModulePositions(), getGyroRotation());
         for (SwerveModule m : this.modules) {
             m.tick();
         }
-        Logger.recordOutput("States", getModuleStates());
+
+        ChassisSpeeds speeds = getFieldRelativeChassisSpeeds();
+        RobotState.getInstance().setRobotVelocities(speeds);
+        Logger.recordOutput("Swerve/RobotVelocities", speeds);
     }
 }
