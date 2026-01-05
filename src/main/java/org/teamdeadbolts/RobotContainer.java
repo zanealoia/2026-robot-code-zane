@@ -94,12 +94,16 @@ public class RobotContainer {
                         new RunCommand(
                                 () -> poseEstimator.setPosition(new Pose3d()), swerveSubsystem));
 
-        primaryController.povUp().whileTrue(swerveSubsystem.runTurnDynamTest(Direction.kForward));
+        primaryController.povUp().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kForward));
         primaryController
                 .povRight()
-                .whileTrue(swerveSubsystem.runTurnQuasiTest(Direction.kForward));
-        primaryController.povDown().whileTrue(swerveSubsystem.runTurnDynamTest(Direction.kReverse));
-        primaryController.povLeft().whileTrue(swerveSubsystem.runTurnQuasiTest(Direction.kReverse));
+                .whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kReverse));
+        primaryController
+                .povDown()
+                .whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kForward));
+        primaryController
+                .povLeft()
+                .whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kReverse));
     }
 
     public Command getAutonomousCommand() {

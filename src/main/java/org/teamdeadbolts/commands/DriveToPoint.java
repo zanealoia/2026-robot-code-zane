@@ -137,11 +137,6 @@ public class DriveToPoint extends Command {
         double forwardVel = tController.calculate(progress, totalDistance);
         double lateralVel = lateralController.calculate(crossTrackError, 0);
 
-        double distanceRemaining = totalDistance - progress;
-        if (distanceRemaining < 0.1) {
-            lateralVel *= (distanceRemaining / 0.1);
-        }
-
         double xVel = forwardVel * pathHeading.getCos() - lateralVel * pathHeading.getSin();
         double yVel = forwardVel * pathHeading.getSin() + lateralVel * pathHeading.getCos();
 

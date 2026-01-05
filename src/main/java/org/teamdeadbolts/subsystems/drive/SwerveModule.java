@@ -185,24 +185,16 @@ public class SwerveModule {
         return this.moduleNumber;
     }
 
-    public void setVolts(double volts) {
+    public void setDriveVolts(double volts) {
         this.driveMotor.setVoltage(volts);
+    }
+
+    public double getDriveVolts() {
+        return this.driveMotor.getMotorVoltage().getValueAsDouble();
     }
 
     public void setTurnVolts(double volts) {
         this.turningMotor.setVoltage(volts);
-    }
-
-    public double getTurnPosition() {
-        return this.turningMotor.getPosition().getValueAsDouble();
-    }
-
-    public double getTurnVelocity() {
-        return this.turningMotor.getVelocity().getValueAsDouble();
-    }
-
-    public double getTurnVoltage() {
-        return this.turningMotor.getMotorVoltage().getValueAsDouble();
     }
 
     public void tick() {

@@ -1,9 +1,9 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.subsystems.drive;
 
-import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.studica.frc.AHRS;
@@ -15,10 +15,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -46,53 +47,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private SysIdRoutine driveRoutine =
             new SysIdRoutine(
-                    new SysIdRoutine.Config(),
-                    new SysIdRoutine.Mechanism(
-                            (volts) -> {
-                                for (SwerveModule m : this.modules) {
-                                    m.setVolts(volts.in(Volts));
-                                    if (m.getModuleNumber() % 2 == 0)
-                                        m.setAngle(Rotation2d.fromDegrees(0));
-                                    else m.setAngle(Rotation2d.fromDegrees(180));
-                                }
-                            },
-                            (log) -> {
-                                for (SwerveModule m : this.modules) {
-                                    log.motor(getName() + "-" + m.getModuleNumber())
-                                            .linearVelocity(
-                                                    LinearVelocity.ofBaseUnits(
-                                                            m.getState().speedMetersPerSecond,
-                                                            MetersPerSecond));
-                                }
-                            },
-                            this));
-
-    private SysIdRoutine turnRoutine =
-            new SysIdRoutine(
-                    new SysIdRoutine.Config(),
-                    new SysIdRoutine.Mechanism(
-                            (volts) -> {
-                                this.modules[0].setTurnVolts(volts.in(Volts));
-                            },
-                            (log) -> {
-                                SwerveModule m = modules[0];
-                                log.motor(getName() + "-" + m.getModuleNumber())
-                                        .angularPosition(
-                                                Angle.ofBaseUnits(
-                                                        m.getPosition().angle.getDegrees(),
-                                                        Degrees));
-
-                                log.motor(getName() + "-" + m.getModuleNumber())
-                                        .angularVelocity(
-                                                AngularVelocity.ofBaseUnits(
-                                                        m.getTurnVelocity(), RotationsPerSecond));
-                                log.motor(getName() + "-" + m.getModuleNumber())
-                                        .voltage(Voltage.ofBaseUnits(m.getTurnVoltage(), Volts));
-                                // log.motor(getName() + "-" +
-                                // m.getModuleNumber()).angularVelocity(AngularVelocity.ofBaseUnits(m.getState().angle, null))
-
-                            },
-                            this));
+                    new SysIdRoutine.Config(null, null, Time.ofBaseUnits(3, Seconds)),
+                    new SysIdRoutine.Mechanism(this::sysIdDriveVolts, this::sysIdDriveLog, this));
 
     /* Callback that the swerve subsystem will update with module positions and gyro rotation */
     private BiConsumer<SwerveModulePosition[], Rotation2d> modulePositionCallback = null;
@@ -108,7 +64,6 @@ public class SwerveSubsystem extends SubsystemBase {
                 };
 
         this.refreshTuning();
-        CommandScheduler.getInstance().registerSubsystem(this);
     }
 
     /**
@@ -225,6 +180,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * Refresh the tuning values from AdvantageKit
      */
     public void refreshTuning() {
+        System.out.println("Refreshing tuning");
         this.slewRateLimiterTranslationalX = new SlewRateLimiter(slewRateTranslational.get());
         this.slewRateLimiterTranslationalY = new SlewRateLimiter(slewRateTranslational.get());
         this.slewRateLimiterRotaional = new SlewRateLimiter(slewRateRotaional.get());
@@ -246,16 +202,27 @@ public class SwerveSubsystem extends SubsystemBase {
         return driveRoutine.dynamic(direction);
     }
 
-    public Command runTurnQuasiTest(Direction direction) {
-        return turnRoutine.quasistatic(direction);
-    }
-
-    public Command runTurnDynamTest(Direction direction) {
-        return turnRoutine.dynamic(direction);
-    }
-
     public void setModulePositionCallback(BiConsumer<SwerveModulePosition[], Rotation2d> callback) {
         this.modulePositionCallback = callback;
+    }
+
+    // Sysid functions
+    private void sysIdDriveVolts(Voltage voltage) {
+        for (SwerveModule m : this.modules) {
+            m.setAngle(new Rotation2d());
+            m.setDriveVolts(voltage.baseUnitMagnitude());
+        }
+    }
+
+    private void sysIdDriveLog(SysIdRoutineLog log) {
+        SwerveModule m = this.modules[0]; // Just use values from 1 module
+        log.motor("Module0")
+                .linearPosition(Distance.ofBaseUnits(m.getPosition().distanceMeters, Meters));
+        log.motor("Module0")
+                .linearVelocity(
+                        LinearVelocity.ofBaseUnits(
+                                m.getState().speedMetersPerSecond, MetersPerSecond));
+        log.motor("Module0").voltage(Voltage.ofBaseUnits(m.getDriveVolts(), Volts));
     }
 
     @Override
