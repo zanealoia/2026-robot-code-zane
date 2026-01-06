@@ -21,7 +21,6 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -29,6 +28,7 @@ import java.util.function.BiConsumer;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.state.RobotState;
+import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -39,11 +39,11 @@ public class SwerveSubsystem extends SubsystemBase {
     private SlewRateLimiter slewRateLimiterRotaional;
 
     private SavedLoggedNetworkNumber maxModuleSpeed =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/MaxModuleSpeed", 1.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/MaxModuleSpeed", 1.0);
     private SavedLoggedNetworkNumber slewRateTranslational =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/TranslationSlew", 1.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/TranslationSlew", 1.0);
     private SavedLoggedNetworkNumber slewRateRotaional =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/RotationSlew", 1.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/RotationSlew", 1.0);
 
     private SysIdRoutine driveRoutine =
             new SysIdRoutine(
@@ -63,7 +63,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     new SwerveModule(SwerveConstants.BACK_RIGHT_CONFIG)
                 };
 
-        this.refreshTuning();
+        ConfigManager.getInstance().onReady(this::refreshTuning);
     }
 
     /**

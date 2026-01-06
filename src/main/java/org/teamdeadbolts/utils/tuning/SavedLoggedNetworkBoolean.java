@@ -1,35 +1,43 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.utils.tuning;
 
+import java.util.HashMap;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+import org.teamdeadbolts.utils.tuning.ConfigManager.Tuneable;
 
-public class SavedLoggedNetworkBoolean extends LoggedNetworkBoolean {
+public class SavedLoggedNetworkBoolean extends LoggedNetworkBoolean implements Tuneable {
     private String key; // This is annoying
     private boolean lastValue = false;
     private ConfigManager configManager = ConfigManager.getInstance();
 
-    public SavedLoggedNetworkBoolean(String key) {
-        super(key);
-        this.key = key;
-        this.initFromConfig();
+    private static final HashMap<String, SavedLoggedNetworkBoolean> INSTANCES = new HashMap<>();
+
+    /**
+     * Get an instance of a SavedLoggedNetworkBoolean
+     * @param key The key of the value
+     * @param defautValue The default value
+     * @return An instance of SavedLoggedNetworkBoolean
+     */
+    public static synchronized SavedLoggedNetworkBoolean get(String key, boolean defautValue) {
+        return INSTANCES.computeIfAbsent(key, k -> new SavedLoggedNetworkBoolean(k, defautValue));
     }
 
-    public SavedLoggedNetworkBoolean(String key, boolean value) {
+    private SavedLoggedNetworkBoolean(String key, boolean value) {
         super(key, value);
         this.key = key;
-        this.initFromConfig();
+        configManager.registerTunable(this);
     }
 
-    private void initFromConfig() {
+    public void initFromConfig() {
         if (!configManager.contains(key)) {
             System.out.printf("Creating new config value %s\n", key);
             configManager.set(key, get());
         } else {
             Object value = configManager.get(key);
-            if (value instanceof Boolean) {
-                boolean bValue = (Boolean) value;
-                System.out.printf("Updating %s to %s\n", key, bValue);
-                this.set(bValue);
+            if (value instanceof Boolean b) {
+                System.out.printf("Updating %s to %s\n", key, b);
+                super.set(b);
+                lastValue = b;
             } else {
                 System.out.printf("Warning: %s is of the wrong type\n", key);
             }
@@ -45,10 +53,11 @@ public class SavedLoggedNetworkBoolean extends LoggedNetworkBoolean {
     @Override
     public void periodic() {
         super.periodic();
-        if (get() != this.lastValue) {
-            System.out.printf("Updating %s from the network to: %s\n", key, get());
-            this.lastValue = get();
-            this.set(this.lastValue);
+        boolean c = get();
+        if (c != this.lastValue) {
+            System.out.printf("Updating %s from the network to: %s\n", key, c);
+            this.lastValue = c;
+            configManager.set(key, c);
         }
     }
 }

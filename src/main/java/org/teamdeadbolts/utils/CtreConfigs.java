@@ -4,6 +4,7 @@ package org.teamdeadbolts.utils;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import org.teamdeadbolts.constants.SwerveConstants;
+import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 /**
@@ -18,20 +19,21 @@ public class CtreConfigs {
 
     /* Trun motor tuning values */
     private static final SavedLoggedNetworkNumber tCurrentLimit =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/CurrentLimit", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/CurrentLimit", 0.0);
 
     /* Drive motor tuning values */
     private static final SavedLoggedNetworkNumber dCurrentLimit =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/CurrentLimit", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/CurrentLimit", 0.0);
 
     // private static final LoggedDashboardChooser dGearRatio =
     // new LoggedDashboardChooser<Integer>("Tuning/Swerve/Drive/GearRatio");
 
     static {
-        init();
+        ConfigManager.getInstance().onReady(CtreConfigs::init);
     }
 
     public static void init() {
+        System.out.println("Init CTRE");
         /* Turning motor config */
         /* Motor inverts and neutral modef */
         swerveTurningFXConfig.MotorOutput.Inverted = SwerveConstants.TURN_INVERTED_MODE;

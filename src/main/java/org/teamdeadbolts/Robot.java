@@ -11,7 +11,7 @@ import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-import org.teamdeadbolts.utils.CtreConfigs;
+import org.teamdeadbolts.utils.tuning.ConfigManager;
 
 public class Robot extends LoggedRobot {
     private Command autonomousCommand;
@@ -62,7 +62,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
-        CtreConfigs.init();
+        ConfigManager.getInstance().init();
     }
 
     @Override

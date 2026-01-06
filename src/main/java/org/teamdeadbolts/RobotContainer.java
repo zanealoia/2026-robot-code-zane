@@ -30,13 +30,13 @@ public class RobotContainer {
             new PoseEstimator(swerveSubsystem, new VisionIOPhoton("CenterCam", new Transform3d()));
 
     private SavedLoggedNetworkNumber controllerDeadband =
-            new SavedLoggedNetworkNumber("Tuning/Drive/ControllerDeadband", 0.08);
+            SavedLoggedNetworkNumber.get("Tuning/Drive/ControllerDeadband", 0.08);
 
     private SavedLoggedNetworkNumber maxRobotSpeed =
-            new SavedLoggedNetworkNumber("Tuning/Drive/MaxRobotSpeed", 1.0);
+            SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotSpeed", 1.0);
 
     private SavedLoggedNetworkNumber maxRobotAnglarSpeed =
-            new SavedLoggedNetworkNumber("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
+            SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
 
     public RobotContainer() {
         configureBindings();

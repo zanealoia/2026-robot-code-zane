@@ -32,25 +32,25 @@ public class PoseEstimator {
 
     /* Tuning values */
     SavedLoggedNetworkNumber wheelTransStdDev =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/WheelTransStdDev", 0.05);
+            SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/WheelTransStdDev", 0.05);
     SavedLoggedNetworkNumber wheelHeadingStdDev =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/WheelHeadingStdDev", 0.05);
+            SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/WheelHeadingStdDev", 0.05);
 
     /* Vision base std dev (sacles with distance) */
     SavedLoggedNetworkNumber visionTransStdDev =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionTransStdDev", 0.05);
+            SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/VisionTransStdDev", 0.05);
     SavedLoggedNetworkNumber visionHeadingStdDev =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/VisionHeadingStdDev", 0.05);
+            SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/VisionHeadingStdDev", 0.05);
 
     // TODO
     SavedLoggedNetworkNumber maxAmbiguity =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/MaxAmbiguity", 0.5);
+            SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/MaxAmbiguity", 0.5);
 
     SavedLoggedNetworkNumber maxTagDist =
-            new SavedLoggedNetworkNumber("Tuning/PoseEstimator/MaxTagDist", 0.5);
+            SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/MaxTagDist", 0.5);
 
     SavedLoggedNetworkBoolean enableVision =
-            new SavedLoggedNetworkBoolean("Tuning/PoseEstimator/EnableVision", true);
+            SavedLoggedNetworkBoolean.get("Tuning/PoseEstimator/EnableVision", true);
 
     public PoseEstimator(SwerveSubsystem swerveSubsystem, VisionIO... ios) {
         this.ios = ios;

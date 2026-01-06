@@ -22,40 +22,40 @@ public class DriveToPoint extends Command {
 
     /** Translation tuning values */
     private SavedLoggedNetworkNumber tP =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/kP", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Translation/kP", 0.0);
 
     private SavedLoggedNetworkNumber tI =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/kI", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Translation/kI", 0.0);
     private SavedLoggedNetworkNumber tD =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/kD", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Translation/kD", 0.0);
     private SavedLoggedNetworkNumber tMaxVel =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/MaxVelMPS", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Translation/MaxVelMPS", 0.0);
 
     private SavedLoggedNetworkNumber tMaxAcc =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Translation/MaxAccMPS", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Translation/MaxAccMPS", 0.0);
 
     /** Rotation tuning values */
     private SavedLoggedNetworkNumber rP =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/kP", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Rotation/kP", 0.0);
 
     private SavedLoggedNetworkNumber rI =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/kI", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Rotation/kI", 0.0);
     private SavedLoggedNetworkNumber rD =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/kD", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Rotation/kD", 0.0);
     private SavedLoggedNetworkNumber rMaxVel =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/MaxVelDPS", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Rotation/MaxVelDPS", 0.0);
 
     private SavedLoggedNetworkNumber rMaxAcc =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Rotation/MaxAccDPS", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Rotation/MaxAccDPS", 0.0);
 
     /** Cross track */
     private SavedLoggedNetworkNumber cP =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Cross/kP", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Cross/kP", 0.0);
 
     private SavedLoggedNetworkNumber cI =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Cross/kI", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Cross/kI", 0.0);
     private SavedLoggedNetworkNumber cD =
-            new SavedLoggedNetworkNumber("Tuning/DriveToPoint/Cross/kD", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Cross/kD", 0.0);
 
     private final ProfiledPIDController tController =
             new ProfiledPIDController(tP.get(), tI.get(), tD.get(), new Constraints(0, 0));

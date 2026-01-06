@@ -27,39 +27,39 @@ public class SwerveModule {
 
     /** Tuning values */
     private final SavedLoggedNetworkNumber dFFkS =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kS", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kS", 0.0);
 
     private final SavedLoggedNetworkNumber dFFkV =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kV", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kV", 0.0);
     private final SavedLoggedNetworkNumber dFFkA =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kA", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kA", 0.0);
     private final SimpleMotorFeedforward driveFF =
             new SimpleMotorFeedforward(dFFkS.get(), dFFkS.get(), dFFkA.get());
 
     private final SavedLoggedNetworkNumber tFFkS =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kS", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kS", 0.0);
     private final SavedLoggedNetworkNumber tFFkV =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kV", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kV", 0.0);
     private final SimpleMotorFeedforward turnFF =
             new SimpleMotorFeedforward(tFFkS.get(), tFFkV.get());
 
     private static final SavedLoggedNetworkNumber dP =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kP", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kP", 0.0);
     private static final SavedLoggedNetworkNumber dI =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kI", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kI", 0.0);
     private static final SavedLoggedNetworkNumber dD =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/kD", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kD", 0.0);
 
     private static final SavedLoggedNetworkNumber tP =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kP", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kP", 0.0);
     private static final SavedLoggedNetworkNumber tI =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kI", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kI", 0.0);
     private static final SavedLoggedNetworkNumber tD =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/kD", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kD", 0.0);
     private static final SavedLoggedNetworkNumber tMaxVel =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/MaxVelocity", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/MaxVelocity", 0.0);
     private static final SavedLoggedNetworkNumber tMaxAccel =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/MaxAcceleration", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/MaxAcceleration", 0.0);
 
     /* PID */
     private ProfiledPIDController tProfiledPIDController =
@@ -91,6 +91,7 @@ public class SwerveModule {
      * Update motor and PID configurations from NetworkTables
      */
     public void configure() {
+        System.out.println(tP.get());
         this.driveMotor.getConfigurator().apply(CtreConfigs.swerveDriveFXConfig);
         this.turningMotor.getConfigurator().apply(CtreConfigs.swerveTurningFXConfig);
         this.encoder.getConfigurator().apply(CtreConfigs.swerveCANcoderConfiguration);
