@@ -10,6 +10,9 @@ public class SavedLoggedNetworkBoolean extends LoggedNetworkBoolean implements T
     private boolean lastValue = false;
     private ConfigManager configManager = ConfigManager.getInstance();
 
+    private boolean immediateValue;
+    private boolean hasImmediateValue = false;
+
     private static final HashMap<String, SavedLoggedNetworkBoolean> INSTANCES = new HashMap<>();
 
     /**
@@ -38,6 +41,8 @@ public class SavedLoggedNetworkBoolean extends LoggedNetworkBoolean implements T
                 System.out.printf("Updating %s to %s\n", key, b);
                 super.set(b);
                 lastValue = b;
+                immediateValue = b;
+                hasImmediateValue = true;
             } else {
                 System.out.printf("Warning: %s is of the wrong type\n", key);
             }
@@ -51,12 +56,22 @@ public class SavedLoggedNetworkBoolean extends LoggedNetworkBoolean implements T
     }
 
     @Override
+    public boolean get() {
+        if (hasImmediateValue) {
+            return immediateValue;
+        }
+        return super.get();
+    }
+
+    @Override
     public void periodic() {
         super.periodic();
-        boolean c = get();
+        boolean c = super.get();
         if (c != this.lastValue) {
             System.out.printf("Updating %s from the network to: %s\n", key, c);
             this.lastValue = c;
+            immediateValue = c;
+            hasImmediateValue = false;
             configManager.set(key, c);
         }
     }

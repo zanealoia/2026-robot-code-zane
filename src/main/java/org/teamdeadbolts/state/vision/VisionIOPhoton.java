@@ -1,12 +1,16 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.state.vision;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Tracer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -15,6 +19,10 @@ import org.teamdeadbolts.constants.VisionConstants;
 public class VisionIOPhoton implements VisionIO {
     private final Transform3d offset;
     private final PhotonCamera camera;
+    private final Map<Integer, Pose3d> tagPoseCache = new HashMap<>();
+
+    private HashSet<Integer> tagIds = new HashSet<>(8);
+    private ArrayList<PoseObservation> poseObservations = new ArrayList<>(8);
 
     /**
      * @param camName The name of the PhotonCamera.
@@ -24,55 +32,78 @@ public class VisionIOPhoton implements VisionIO {
     public VisionIOPhoton(String camName, Transform3d offset) {
         this.camera = new PhotonCamera(camName);
         this.offset = offset;
+
+        for (AprilTag tag : VisionConstants.FIELD_LAYOUT.getTags()) {
+            tagPoseCache.put(tag.ID, tag.pose);
+        }
     }
 
+    @Override
     public void update(VisionIOCtx ctx) {
+        Tracer tracer = new Tracer();
+        long startTime = RobotController.getFPGATime();
+
+        tracer.addEpoch("Start");
 
         List<PhotonPipelineResult> results = camera.getAllUnreadResults();
 
+        tracer.addEpoch("Get Results");
+
         if (results.isEmpty()) {
-            return;
-        }
+            ctx.observations = new PoseObservation[0];
+            ctx.tagIds = new int[0];
+            tracer.addEpoch("No Results");
+        } else {
 
-        HashSet<Integer> tagIds = new HashSet<>();
-        LinkedList<PoseObservation> poseObservations = new LinkedList<>();
+            PhotonPipelineResult result = results.get(results.size() - 1);
 
-        for (PhotonPipelineResult r : results) {
+            tagIds.clear();
+            poseObservations.clear();
+            tracer.addEpoch("Clear Lists");
 
-            if (r.hasTargets()) {
-                PhotonTrackedTarget best = r.getBestTarget();
-                Optional<Pose3d> tagPose = VisionConstants.FIELD_LAYOUT.getTagPose(best.fiducialId);
+            if (result.hasTargets()) {
+                PhotonTrackedTarget best = result.getBestTarget();
+                Pose3d tagPose = tagPoseCache.get(best.getFiducialId());
 
-                if (tagPose.isPresent()) {
-                    // System.out.println("Got tag " + best.fiducialId);
+                tracer.addEpoch("Tag lookup");
+                if (tagPose != null) {
                     Transform3d fieldToTarget =
-                            new Transform3d(
-                                    tagPose.get().getTranslation(), tagPose.get().getRotation());
+                            new Transform3d(tagPose.getTranslation(), tagPose.getRotation());
                     Transform3d camToTarget = best.bestCameraToTarget;
                     Transform3d fieldToCam = fieldToTarget.plus(camToTarget.inverse());
                     Transform3d fieldToRobot = fieldToCam.plus(offset.inverse());
+
+                    tracer.addEpoch("Pose calcs");
+
                     Pose3d robotPose =
                             new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+
                     tagIds.add(best.fiducialId);
                     poseObservations.add(
                             new PoseObservation(
-                                    r.getTimestampSeconds(),
+                                    result.getTimestampSeconds(),
                                     robotPose,
                                     best.poseAmbiguity,
                                     camToTarget.getTranslation().getNorm()));
+
+                    tracer.addEpoch("Add Observation");
                 }
             }
+
+            ctx.observations =
+                    poseObservations.toArray(new PoseObservation[poseObservations.size()]);
+
+            ctx.tagIds = new int[tagIds.size()];
+            int i = 0;
+            for (int tagId : tagIds) {
+                ctx.tagIds[i++] = tagId;
+            }
+            tracer.addEpoch("Outputs");
         }
 
-        ctx.observations = new PoseObservation[poseObservations.size()];
-        for (int i = 0; i < poseObservations.size(); i++) {
-            ctx.observations[i] = poseObservations.get(i);
-        }
-
-        ctx.tagIds = new int[tagIds.size()];
-        int i = 0;
-        for (int tagId : tagIds) {
-            ctx.tagIds[i++] = tagId;
+        long elapsed = RobotController.getFPGATime() - startTime;
+        if (elapsed > 300_000) {
+            tracer.printEpochs();
         }
     }
 }

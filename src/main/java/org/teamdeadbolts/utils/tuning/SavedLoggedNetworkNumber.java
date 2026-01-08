@@ -10,6 +10,10 @@ public class SavedLoggedNetworkNumber extends LoggedNetworkNumber implements Tun
     private double lastValue = 0.0;
     private ConfigManager configManager = ConfigManager.getInstance();
 
+    // Some more hackery
+    private double immediateValue;
+    private boolean hasImmediateValue = false;
+
     private static final HashMap<String, SavedLoggedNetworkNumber> INSTANCES = new HashMap<>();
 
     /**
@@ -19,12 +23,15 @@ public class SavedLoggedNetworkNumber extends LoggedNetworkNumber implements Tun
      * @return An instance of SavedLoggedNetworkNumber
      */
     public static synchronized SavedLoggedNetworkNumber get(String key, double defautValue) {
-        return INSTANCES.computeIfAbsent(key, k -> SavedLoggedNetworkNumber.get(k, defautValue));
+        return INSTANCES.computeIfAbsent(key, k -> new SavedLoggedNetworkNumber(k, defautValue));
     }
 
     private SavedLoggedNetworkNumber(String key, double value) {
         super(key, value);
         this.key = key;
+        this.immediateValue = value;
+        this.hasImmediateValue = true;
+
         configManager.registerTunable(this);
     }
 
@@ -32,12 +39,15 @@ public class SavedLoggedNetworkNumber extends LoggedNetworkNumber implements Tun
         if (!configManager.contains(key)) {
             System.out.printf("Creating new config value %s\n", key);
             configManager.set(key, get());
+            lastValue = get();
         } else {
             Object value = configManager.get(key);
             if (value instanceof Double d) {
                 System.out.printf("Updating %s to %s\n", key, d);
                 super.set(d);
                 lastValue = d;
+                immediateValue = d;
+                hasImmediateValue = true;
             } else {
                 System.out.printf("Warning: %s is of the wrong type\n", key);
             }
@@ -48,15 +58,27 @@ public class SavedLoggedNetworkNumber extends LoggedNetworkNumber implements Tun
     public void set(double value) {
         super.set(value);
         configManager.set(this.key, value);
+        this.immediateValue = value;
+        this.hasImmediateValue = true;
+    }
+
+    @Override
+    public double get() {
+        if (hasImmediateValue) {
+            return immediateValue;
+        }
+        return super.get();
     }
 
     @Override
     public void periodic() {
         super.periodic();
-        double c = get();
+        double c = super.get();
         if (c != this.lastValue) {
             System.out.printf("Updating %s from the network to: %s\n", key, c);
             this.lastValue = c;
+            immediateValue = c;
+            hasImmediateValue = false;
             configManager.set(key, c);
         }
     }

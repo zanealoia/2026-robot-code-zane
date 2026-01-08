@@ -17,7 +17,6 @@ import org.teamdeadbolts.commands.DriveToPoint;
 import org.teamdeadbolts.state.PoseEstimator;
 import org.teamdeadbolts.state.vision.VisionIOPhoton;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
-import org.teamdeadbolts.utils.CtreConfigs;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class RobotContainer {
@@ -69,8 +68,8 @@ public class RobotContainer {
                 .whileTrue(
                         new RunCommand(
                                 () -> {
-                                    CtreConfigs.init();
-                                    swerveSubsystem.refreshTuning();
+                                    // CtreConfigs.init();
+                                    swerveSubsystem.refreshTuning(false);
                                 },
                                 swerveSubsystem));
 

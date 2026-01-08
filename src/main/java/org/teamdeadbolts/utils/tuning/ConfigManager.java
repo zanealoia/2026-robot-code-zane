@@ -82,7 +82,7 @@ public class ConfigManager {
 
         // Run ready listeners
 
-        System.out.println(readyListeners.size() + " Ready listeners");
+        System.out.println(readyListeners);
         readyListeners.forEach(Runnable::run);
         readyListeners.clear();
     }

@@ -7,7 +7,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import java.util.LinkedList;
+import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Tracer;
+import java.util.ArrayList;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.SwerveConstants;
@@ -52,6 +54,10 @@ public class PoseEstimator {
     SavedLoggedNetworkBoolean enableVision =
             SavedLoggedNetworkBoolean.get("Tuning/PoseEstimator/EnableVision", true);
 
+    private final ArrayList<Pose3d> tagPoses = new ArrayList<>();
+    private final ArrayList<Pose3d> robotPoses = new ArrayList<>();
+    private int loopCount = 0;
+
     public PoseEstimator(SwerveSubsystem swerveSubsystem, VisionIO... ios) {
         this.ios = ios;
         this.ctxs = new VisionIOCtxAutoLogged[ios.length];
@@ -90,24 +96,33 @@ public class PoseEstimator {
     }
 
     public void update() {
+        long startTime = RobotController.getFPGATime();
+        Tracer tracer = new Tracer();
+
+        tracer.addEpoch("Start");
         Logger.recordOutput("PoseEstimator/Pose3d", estimatedPose);
         robotState.setRobotPose(estimatedPose);
 
+        tracer.addEpoch("Set Robot State");
+
+        tagPoses.clear();
+        robotPoses.clear();
         for (int i = 0; i < ios.length; i++) {
             ios[i].update(ctxs[i]);
             Logger.processInputs("Vision/Camera " + i, ctxs[i]);
         }
 
-        for (int index = 0; index < ctxs.length; index++) {
-            LinkedList<Pose3d> tagPoses = new LinkedList<>();
-            LinkedList<Pose3d> robotPoses = new LinkedList<>();
+        tracer.addEpoch("IO + Inputs");
 
+        for (int index = 0; index < ctxs.length; index++) {
             for (int tId : ctxs[index].tagIds) {
                 Optional<Pose3d> tagPose = VisionConstants.FIELD_LAYOUT.getTagPose(tId);
                 if (tagPose.isPresent()) {
                     tagPoses.add(tagPose.get());
                 }
             }
+
+            tracer.addEpoch("Tag Lookup");
 
             for (PoseObservation observation : ctxs[index].observations) {
                 boolean acceptPose =
@@ -125,7 +140,7 @@ public class PoseEstimator {
 
                 if (enableVision.get()) {
                     if (!acceptPose) continue;
-                    double stdDevFactor = Math.pow(observation.tagDist(), 1.5);
+                    double stdDevFactor = observation.tagDist() * Math.sqrt(observation.tagDist());
                     double transStdDev = visionTransStdDev.get() * stdDevFactor;
                     double headingStdDev = visionHeadingStdDev.get() * stdDevFactor;
 
@@ -136,13 +151,26 @@ public class PoseEstimator {
                 }
             }
 
+            tracer.addEpoch("Observations");
+
             // Logging
-            Logger.recordOutput(
-                    "Vision/Camera " + index + "/TagPoses",
-                    tagPoses.toArray(new Pose3d[tagPoses.size()]));
-            Logger.recordOutput(
-                    "Vision/Camera " + index + "/RobotPoses",
-                    robotPoses.toArray(new Pose3d[robotPoses.size()]));
+            if (loopCount++ > 4) {
+                loopCount = 0;
+
+                Logger.recordOutput(
+                        "Vision/Camera " + index + "/TagPoses",
+                        tagPoses.toArray(new Pose3d[tagPoses.size()]));
+                Logger.recordOutput(
+                        "Vision/Camera " + index + "/RobotPoses",
+                        robotPoses.toArray(new Pose3d[robotPoses.size()]));
+            }
+
+            tracer.addEpoch("Logging");
+        }
+
+        long elapsed = RobotController.getFPGATime() - startTime;
+        if (elapsed > 1_000_000) {
+            tracer.printEpochs();
         }
     }
 }

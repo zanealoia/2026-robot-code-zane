@@ -82,7 +82,6 @@ public class SwerveModule {
         this.encoder = new CANcoder(config.encoderId());
         this.driveMotor = new TalonFX(config.driveMotorId());
         this.turningMotor = new TalonFX(config.turningMotorId());
-        this.configure();
         this.resetToAbs();
         this.driveMotor.setPosition(0.0);
     }
@@ -91,7 +90,6 @@ public class SwerveModule {
      * Update motor and PID configurations from NetworkTables
      */
     public void configure() {
-        System.out.println(tP.get());
         this.driveMotor.getConfigurator().apply(CtreConfigs.swerveDriveFXConfig);
         this.turningMotor.getConfigurator().apply(CtreConfigs.swerveTurningFXConfig);
         this.encoder.getConfigurator().apply(CtreConfigs.swerveCANcoderConfiguration);

@@ -4,7 +4,6 @@ package org.teamdeadbolts.commands;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -48,27 +47,16 @@ public class DriveToPoint extends Command {
     private SavedLoggedNetworkNumber rMaxAcc =
             SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Rotation/MaxAccDPS", 0.0);
 
-    /** Cross track */
-    private SavedLoggedNetworkNumber cP =
-            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Cross/kP", 0.0);
-
-    private SavedLoggedNetworkNumber cI =
-            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Cross/kI", 0.0);
-    private SavedLoggedNetworkNumber cD =
-            SavedLoggedNetworkNumber.get("Tuning/DriveToPoint/Cross/kD", 0.0);
-
     private final ProfiledPIDController tController =
             new ProfiledPIDController(tP.get(), tI.get(), tD.get(), new Constraints(0, 0));
 
     private final ProfiledPIDController thetaController =
             new ProfiledPIDController(rP.get(), rI.get(), rD.get(), new Constraints(0, 0));
 
-    private final PIDController lateralController = new PIDController(cP.get(), cI.get(), cD.get());
 
     private Pose2d target;
     private Pose2d tolerance;
 
-    private Translation2d startPoint;
     double totalDistance;
 
     /**
@@ -87,74 +75,55 @@ public class DriveToPoint extends Command {
 
     @Override
     public void initialize() {
-        /** Refresh pid values from nt */
         Constraints transConstraints = new Constraints(tMaxVel.get(), tMaxAcc.get());
-        Constraints rotConstraints =
-                new Constraints(
-                        Units.degreesToRadians(rMaxVel.get()),
-                        Units.degreesToRadians(rMaxAcc.get()));
-
         tController.setConstraints(transConstraints);
         tController.setPID(tP.get(), tI.get(), tD.get());
 
-        thetaController.setConstraints(rotConstraints);
+        thetaController.setConstraints(
+                new Constraints(
+                        Units.degreesToRadians(rMaxVel.get()),
+                        Units.degreesToRadians(rMaxAcc.get())));
         thetaController.setPID(rP.get(), rI.get(), rD.get());
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-        lateralController.setPID(cP.get(), cI.get(), cD.get());
-
         Pose2d currentPose = this.robotState.getRobotPose().toPose2d();
-
-        startPoint = currentPose.getTranslation();
-        totalDistance = startPoint.getDistance(target.getTranslation());
-
-        Rotation2d pathHeading = target.getTranslation().minus(startPoint).getAngle();
-
         ChassisSpeeds speeds = this.robotState.getRobotVelocities();
-        double velAlongPath =
-                speeds.vxMetersPerSecond * pathHeading.getCos()
-                        + speeds.vyMetersPerSecond * pathHeading.getSin();
 
-        tController.reset(0, velAlongPath);
+        double currentDistance = currentPose.getTranslation().getDistance(target.getTranslation());
+
+        Translation2d unitVectorToTarget =
+                target.getTranslation().minus(currentPose.getTranslation()).div(currentDistance);
+        double velocityMagnitude =
+                speeds.vxMetersPerSecond * unitVectorToTarget.getX()
+                        + speeds.vyMetersPerSecond * unitVectorToTarget.getY();
+
+        tController.reset(currentDistance, velocityMagnitude);
         thetaController.reset(currentPose.getRotation().getRadians(), speeds.omegaRadiansPerSecond);
-        lateralController.reset();
     }
 
     @Override
     public void execute() {
         Pose2d currentPose = this.robotState.getRobotPose().toPose2d();
-        Translation2d currOffset = currentPose.getTranslation().minus(startPoint);
+        Translation2d translationError =
+                target.getTranslation().minus(currentPose.getTranslation());
+        double distance = translationError.getNorm();
 
-        Rotation2d pathHeading = target.getTranslation().minus(startPoint).getAngle();
+        double totalVel = -tController.calculate(distance, 0);
 
-        double progress =
-                currOffset.getX() * pathHeading.getCos() + currOffset.getY() * pathHeading.getSin();
-
-        double crossTrackError =
-                -currOffset.getX() * pathHeading.getSin()
-                        + currOffset.getY() * pathHeading.getCos();
-
-        double forwardVel = tController.calculate(progress, totalDistance);
-        double lateralVel = lateralController.calculate(crossTrackError, 0);
-
-        double xVel = forwardVel * pathHeading.getCos() - lateralVel * pathHeading.getSin();
-        double yVel = forwardVel * pathHeading.getSin() + lateralVel * pathHeading.getCos();
+        double xVel = (translationError.getX() / distance) * totalVel;
+        double yVel = (translationError.getY() / distance) * totalVel;
 
         double thetaVel =
                 thetaController.calculate(
                         currentPose.getRotation().getRadians(), target.getRotation().getRadians());
 
-        swerveSubsystem.drive(new Translation2d(xVel, yVel), thetaVel, true, false);
+        swerveSubsystem.drive(new Translation2d(xVel, yVel), thetaVel, true, false, true);
 
         Logger.recordOutput("DriveToPoint/TargetPose", target);
         Logger.recordOutput("DriveToPoint/XVelCmd", xVel);
         Logger.recordOutput("DriveToPoint/YVelCmd", yVel);
         Logger.recordOutput("DriveToPoint/RotVelCmd", Units.radiansToDegrees(thetaVel));
-        Logger.recordOutput("DriveToPoint/LateralVelCmd", lateralVel);
-        Logger.recordOutput("DriveToPoint/ForwardVelCmd", forwardVel);
-        Logger.recordOutput("DriveToPoint/Progress", progress);
         Logger.recordOutput("DriveToPoint/TransError", tController.getPositionError());
-        Logger.recordOutput("DriveToPoint/CrossTrackError", crossTrackError);
         Logger.recordOutput(
                 "DriveToPoint/ThetaError",
                 Units.radiansToDegrees(thetaController.getPositionError()));

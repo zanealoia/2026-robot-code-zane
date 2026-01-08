@@ -28,6 +28,7 @@ import java.util.function.BiConsumer;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.state.RobotState;
+import org.teamdeadbolts.utils.CtreConfigs;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
@@ -63,7 +64,7 @@ public class SwerveSubsystem extends SubsystemBase {
                     new SwerveModule(SwerveConstants.BACK_RIGHT_CONFIG)
                 };
 
-        ConfigManager.getInstance().onReady(this::refreshTuning);
+        ConfigManager.getInstance().onReady(() -> this.refreshTuning(true));
     }
 
     /**
@@ -71,45 +72,64 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param translation A {@link Translation2d} representing the x and y motion in <strong>m/s</strong>
      * @param rotation The target rotation speed for the motion in <strong>rads/sec</strong>
      * @param fieldRelative Weather or not to drive the robot relative to the field or itself
+     * @param useOdometryRotation Weather or not to use the gyro rotation or the full odometry rotation
      */
     public void drive(
-            Translation2d translation, double rotation, boolean fieldRelative, boolean slewRates) {
+            Translation2d translation,
+            double rotation,
+            boolean fieldRelative,
+            boolean slewRates,
+            boolean useOdometryRotation) {
         Logger.recordOutput("Swerve/CommandedVelocitiesTrans", translation);
         Logger.recordOutput("Swerve/CommandedVelocitiesRot", Units.radiansToDegrees(rotation));
 
         SwerveModuleState[] states =
                 SwerveConstants.SWERVE_KINEMATICS.toSwerveModuleStates(
-                        fieldRelative
-                                ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                        slewRates
-                                                ? slewRateLimiterTranslationalX.calculate(
-                                                        translation.getX())
-                                                : translation.getX(),
-                                        slewRates
-                                                ? slewRateLimiterTranslationalY.calculate(
-                                                        translation.getY())
-                                                : translation.getY(),
-                                        slewRates
-                                                ? slewRateLimiterRotaional.calculate(rotation)
-                                                : rotation,
-                                        getGyroRotation())
-                                : new ChassisSpeeds(
-                                        slewRates
-                                                ? slewRateLimiterTranslationalX.calculate(
-                                                        translation.getX())
-                                                : translation.getX(),
-                                        slewRates
-                                                ? slewRateLimiterTranslationalY.calculate(
-                                                        translation.getY())
-                                                : translation.getY(),
-                                        slewRates
-                                                ? slewRateLimiterRotaional.calculate(rotation)
-                                                : rotation));
+                        calculateChassisSpeeds(
+                                translation,
+                                rotation,
+                                slewRates,
+                                fieldRelative,
+                                useOdometryRotation
+                                        ? RobotState.getInstance()
+                                                .getRobotPose()
+                                                .getRotation()
+                                                .toRotation2d()
+                                        : getGyroRotation()));
 
         SwerveDriveKinematics.desaturateWheelSpeeds(states, maxModuleSpeed.get());
         for (SwerveModule m : modules) {
             m.setDesiredState(states[m.getModuleNumber()]);
         }
+    }
+
+    private ChassisSpeeds calculateChassisSpeeds(
+            Translation2d translation,
+            double rotation,
+            boolean slewRates,
+            boolean fieldRelative,
+            Rotation2d robotRotation) {
+        ChassisSpeeds speeds;
+        if (slewRates) {
+            speeds =
+                    fieldRelative
+                            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                                    slewRateLimiterTranslationalX.calculate(translation.getX()),
+                                    slewRateLimiterTranslationalY.calculate(translation.getY()),
+                                    slewRateLimiterRotaional.calculate(rotation),
+                                    robotRotation)
+                            : new ChassisSpeeds(
+                                    slewRateLimiterTranslationalX.calculate(translation.getX()),
+                                    slewRateLimiterTranslationalY.calculate(translation.getY()),
+                                    slewRateLimiterRotaional.calculate(rotation));
+        } else {
+            speeds =
+                    fieldRelative
+                            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                                    translation.getX(), translation.getY(), rotation, robotRotation)
+                            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+        }
+        return speeds;
     }
 
     /**
@@ -179,7 +199,8 @@ public class SwerveSubsystem extends SubsystemBase {
     /**
      * Refresh the tuning values from AdvantageKit
      */
-    public void refreshTuning() {
+    public void refreshTuning(boolean a) {
+        if (a) CtreConfigs.init();
         System.out.println("Refreshing tuning");
         this.slewRateLimiterTranslationalX = new SlewRateLimiter(slewRateTranslational.get());
         this.slewRateLimiterTranslationalY = new SlewRateLimiter(slewRateTranslational.get());

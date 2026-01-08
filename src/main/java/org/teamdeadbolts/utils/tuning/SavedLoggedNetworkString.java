@@ -12,6 +12,9 @@ public class SavedLoggedNetworkString extends LoggedNetworkString implements Tun
 
     private static final HashMap<String, SavedLoggedNetworkString> INSTANCES = new HashMap<>();
 
+    private String immediateValue;
+    private boolean hasImmediateValue = false;
+
     /**
      * Get an instance of a SavedLoggedNetworkString
      * @param key The key of the value
@@ -32,11 +35,14 @@ public class SavedLoggedNetworkString extends LoggedNetworkString implements Tun
         if (!configManager.contains(key)) {
             System.out.printf("Creating new config alue %s\n", key);
             configManager.set(key, get());
+            lastValue = get();
         } else {
             Object value = configManager.get(key);
             if (value instanceof String s) {
                 System.out.printf("Updating %s to %s\n", key, s);
                 super.set(s);
+                immediateValue = s;
+                hasImmediateValue = true;
                 lastValue = s;
             } else {
                 System.out.printf("Warning: %s is of the wrong type\n", key);
@@ -48,6 +54,8 @@ public class SavedLoggedNetworkString extends LoggedNetworkString implements Tun
     public void set(String value) {
         super.set(value);
         configManager.set(this.key, value);
+        immediateValue = value;
+        hasImmediateValue = true;
     }
 
     @Override
@@ -57,6 +65,8 @@ public class SavedLoggedNetworkString extends LoggedNetworkString implements Tun
         if (!c.equals(this.lastValue)) {
             System.out.printf("Updating %s from the network to: %s\n", key, c);
             this.lastValue = c;
+            immediateValue = c;
+            hasImmediateValue = false;
             configManager.set(key, c);
         }
     }
