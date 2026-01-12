@@ -47,6 +47,7 @@ public class DriveCommand extends Command {
                 new Translation2d(forwardSupplier.getAsDouble(), sidewaysSupplier.getAsDouble()),
                 rotationSupplier.getAsDouble(),
                 fieldRelative,
+                false,
                 false);
     }
 }

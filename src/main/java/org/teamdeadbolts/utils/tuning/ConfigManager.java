@@ -10,7 +10,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Store config data on the rio
@@ -24,6 +26,10 @@ public class ConfigManager {
 
     private Path currVerFile;
     private RobotConfig currConfig;
+
+    private boolean ready = false;
+    private final List<Runnable> readyListeners = new ArrayList<>();
+    private final List<Tuneable> tuneables = new ArrayList<>();
 
     /**
      * Get the current instance of config manager or create it if it doesn't exist
@@ -48,9 +54,37 @@ public class ConfigManager {
     public static synchronized ConfigManager getTestInstance(Path configDir) {
         if (INSTANCE == null) {
             INSTANCE = new ConfigManager(configDir);
+            INSTANCE.init();
         }
 
         return INSTANCE;
+    }
+
+    public void registerTunable(Tuneable t) {
+        tuneables.add(t);
+    }
+
+    public synchronized void onReady(Runnable r) {
+        if (ready) {
+            r.run();
+        } else {
+            readyListeners.add(r);
+        }
+    }
+
+    public void init() {
+        if (ready) return;
+        ready = true;
+
+        // Init tunables 1st
+        System.out.println(tuneables.size() + " Tuneable values");
+        tuneables.forEach(Tuneable::initFromConfig);
+
+        // Run ready listeners
+
+        System.out.println(readyListeners);
+        readyListeners.forEach(Runnable::run);
+        readyListeners.clear();
     }
 
     /**
@@ -240,5 +274,9 @@ public class ConfigManager {
         public String toString() {
             return String.format("RobotConfig{version=%s,config=%s}", version, values.toString());
         }
+    }
+
+    public interface Tuneable {
+        public void initFromConfig();
     }
 }

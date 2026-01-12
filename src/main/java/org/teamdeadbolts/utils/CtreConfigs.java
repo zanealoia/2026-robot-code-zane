@@ -18,22 +18,21 @@ public class CtreConfigs {
 
     /* Trun motor tuning values */
     private static final SavedLoggedNetworkNumber tCurrentLimit =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Turn/CurrentLimit", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/CurrentLimit", 0.0);
 
     /* Drive motor tuning values */
     private static final SavedLoggedNetworkNumber dCurrentLimit =
-            new SavedLoggedNetworkNumber("Tuning/Swerve/Drive/CurrentLimit", 0.0);
+            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/CurrentLimit", 0.0);
 
     // private static final LoggedDashboardChooser dGearRatio =
     // new LoggedDashboardChooser<Integer>("Tuning/Swerve/Drive/GearRatio");
 
-    static {
-        init();
-    }
-
     public static void init() {
+        System.out.println("CTRE Cfg");
+        dCurrentLimit.initFromConfig(); // This seems like it'll come back for me
+        tCurrentLimit.initFromConfig();
         /* Turning motor config */
-        /* Motor inverts and neutral modef */
+        /* Motor inverts and neutral mode */
         swerveTurningFXConfig.MotorOutput.Inverted = SwerveConstants.TURN_INVERTED_MODE;
         swerveTurningFXConfig.MotorOutput.NeutralMode = SwerveConstants.TURN_NEUTRAL_MODE;
 
