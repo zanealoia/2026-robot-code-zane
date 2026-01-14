@@ -23,15 +23,12 @@ public class ConfigManagerTest {
     @AfterEach
     public void cleanup() throws IOException {
         if (tempDir != null && Files.exists(tempDir)) {
-            Files.walk(tempDir)
-                    .sorted((a, b) -> b.compareTo(a))
-                    .forEach(
-                            p -> {
-                                try {
-                                    Files.deleteIfExists(p);
-                                } catch (IOException ignored) {
-                                }
-                            });
+            Files.walk(tempDir).sorted((a, b) -> b.compareTo(a)).forEach(p -> {
+                try {
+                    Files.deleteIfExists(p);
+                } catch (IOException ignored) {
+                }
+            });
         }
     }
 

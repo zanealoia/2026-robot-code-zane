@@ -1,8 +1,8 @@
 
 plugins {
 	id "java"
-	id "edu.wpi.first.GradleRIO" version "2025.3.2"
-	id "com.diffplug.spotless" version "8.0.0"
+	id "edu.wpi.first.GradleRIO" version "2026.1.1"
+	id "com.diffplug.spotless" version "8.1.0"
 }
 
 def javaVersion = JavaVersion.VERSION_17
@@ -120,19 +120,22 @@ task(replayWatch, type: JavaExec) {
 }
 
 spotless {
+	format 'misc', {
+		target '*.gradle', '.gitattributes', '.gitignore'
 
+		trimTrailingWhitespace()
+		leadingSpacesToTabs() // or leadingTabsToSpaces. Takes an integer argument if you don't like 4
+		endWithNewline()
+	}
+	java {
+		palantirJavaFormat()
+		// lintToggleOff()
+		formatAnnotations()
+		licenseHeader '/* The Deadbolts (C) $YEAR */'
 
-format 'misc', {
-	target '*.gradle', '.gitattributes', '.gitignore'
-
-	trimTrailingWhitespace()
-	leadingSpacesToTabs() // or leadingTabsToSpaces. Takes an integer argument if you don't like 4
-	endWithNewline()
-}
-java {
-	googleJavaFormat('1.15.0').aosp().reflowLongStrings().skipJavadocFormatting()
-	// lintToggleOff()
-	formatAnnotations()
-	licenseHeader '/* The Deadbolts (C) $YEAR */'
-}
+		suppressLintsFor {
+			step = "lint"
+			shortCode = "google-java-format"
+		}
+	}
 }

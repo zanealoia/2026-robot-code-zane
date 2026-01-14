@@ -67,31 +67,27 @@ public class VisionIOPhoton implements VisionIO {
 
                 tracer.addEpoch("Tag lookup");
                 if (tagPose != null) {
-                    Transform3d fieldToTarget =
-                            new Transform3d(tagPose.getTranslation(), tagPose.getRotation());
+                    Transform3d fieldToTarget = new Transform3d(tagPose.getTranslation(), tagPose.getRotation());
                     Transform3d camToTarget = best.bestCameraToTarget;
                     Transform3d fieldToCam = fieldToTarget.plus(camToTarget.inverse());
                     Transform3d fieldToRobot = fieldToCam.plus(offset.inverse());
 
                     tracer.addEpoch("Pose calcs");
 
-                    Pose3d robotPose =
-                            new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
+                    Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
                     tagIds.add(best.fiducialId);
-                    poseObservations.add(
-                            new PoseObservation(
-                                    result.getTimestampSeconds(),
-                                    robotPose,
-                                    best.poseAmbiguity,
-                                    camToTarget.getTranslation().getNorm()));
+                    poseObservations.add(new PoseObservation(
+                            result.getTimestampSeconds(),
+                            robotPose,
+                            best.poseAmbiguity,
+                            camToTarget.getTranslation().getNorm()));
 
                     tracer.addEpoch("Add Observation");
                 }
             }
 
-            ctx.observations =
-                    poseObservations.toArray(new PoseObservation[poseObservations.size()]);
+            ctx.observations = poseObservations.toArray(new PoseObservation[poseObservations.size()]);
 
             ctx.tagIds = new int[tagIds.size()];
             int i = 0;

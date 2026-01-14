@@ -6,7 +6,11 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.studica.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.studica.frc.Navx;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -14,7 +18,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -33,36 +36,55 @@ import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class SwerveSubsystem extends SubsystemBase {
-    private final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
+    private final Navx gyro = new Navx(0);
     private SwerveModule[] modules;
     private SlewRateLimiter slewRateLimiterTranslationalX;
     private SlewRateLimiter slewRateLimiterTranslationalY;
     private SlewRateLimiter slewRateLimiterRotaional;
 
-    private SavedLoggedNetworkNumber maxModuleSpeed =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/MaxModuleSpeed", 1.0);
+    private SavedLoggedNetworkNumber maxModuleSpeed = SavedLoggedNetworkNumber.get("Tuning/Swerve/MaxModuleSpeed", 1.0);
     private SavedLoggedNetworkNumber slewRateTranslational =
             SavedLoggedNetworkNumber.get("Tuning/Swerve/TranslationSlew", 1.0);
     private SavedLoggedNetworkNumber slewRateRotaional =
             SavedLoggedNetworkNumber.get("Tuning/Swerve/RotationSlew", 1.0);
 
-    private SysIdRoutine driveRoutine =
-            new SysIdRoutine(
-                    new SysIdRoutine.Config(null, null, Time.ofBaseUnits(3, Seconds)),
-                    new SysIdRoutine.Mechanism(this::sysIdDriveVolts, this::sysIdDriveLog, this));
+    private SysIdRoutine driveRoutine = new SysIdRoutine(
+            new SysIdRoutine.Config(null, null, Time.ofBaseUnits(3, Seconds)),
+            new SysIdRoutine.Mechanism(this::sysIdDriveVolts, this::sysIdDriveLog, this));
 
     /* Callback that the swerve subsystem will update with module positions and gyro rotation */
     private BiConsumer<SwerveModulePosition[], Rotation2d> modulePositionCallback = null;
 
+    private Rotation2d offset;
+
     public SwerveSubsystem() {
+        RobotConfig robotConfig = null;
+
+        try {
+            robotConfig = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        AutoBuilder.configure(
+                () -> RobotState.getInstance().getRobotPose().toPose2d(),
+                null,
+                () -> RobotState.getInstance().getRobotVelocities(),
+                (speeds) -> this.drive(speeds, false, false, false),
+                new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
+                robotConfig,
+                () -> {
+                    return false;
+                },
+                this);
+
         this.resetGyro();
-        this.modules =
-                new SwerveModule[] {
-                    new SwerveModule(SwerveConstants.FRONT_LEFT_CONFIG),
-                    new SwerveModule(SwerveConstants.FRONT_RIGHT_CONFIG),
-                    new SwerveModule(SwerveConstants.BACK_LEFT_CONFIG),
-                    new SwerveModule(SwerveConstants.BACK_RIGHT_CONFIG)
-                };
+        this.modules = new SwerveModule[] {
+            new SwerveModule(SwerveConstants.FRONT_LEFT_CONFIG),
+            new SwerveModule(SwerveConstants.FRONT_RIGHT_CONFIG),
+            new SwerveModule(SwerveConstants.BACK_LEFT_CONFIG),
+            new SwerveModule(SwerveConstants.BACK_RIGHT_CONFIG)
+        };
 
         ConfigManager.getInstance().onReady(() -> this.refreshTuning(true));
     }
@@ -74,28 +96,17 @@ public class SwerveSubsystem extends SubsystemBase {
      * @param fieldRelative Weather or not to drive the robot relative to the field or itself
      * @param useOdometryRotation Weather or not to use the gyro rotation or the full odometry rotation
      */
-    public void drive(
-            Translation2d translation,
-            double rotation,
-            boolean fieldRelative,
-            boolean slewRates,
-            boolean useOdometryRotation) {
-        Logger.recordOutput("Swerve/CommandedVelocitiesTrans", translation);
-        Logger.recordOutput("Swerve/CommandedVelocitiesRot", Units.radiansToDegrees(rotation));
+    public void drive(ChassisSpeeds speeds, boolean fieldRelative, boolean slewRates, boolean useOdometryRotation) {
+        // Logger.recordOutput("Swerve/CommandedVelocitiesTrans", translation);
+        // Logger.recordOutput("Swerve/CommandedVelocitiesRot", Units.radiansToDegrees(rotation));
 
-        SwerveModuleState[] states =
-                SwerveConstants.SWERVE_KINEMATICS.toSwerveModuleStates(
-                        calculateChassisSpeeds(
-                                translation,
-                                rotation,
-                                slewRates,
-                                fieldRelative,
-                                useOdometryRotation
-                                        ? RobotState.getInstance()
-                                                .getRobotPose()
-                                                .getRotation()
-                                                .toRotation2d()
-                                        : getGyroRotation()));
+        SwerveModuleState[] states = SwerveConstants.SWERVE_KINEMATICS.toSwerveModuleStates(calculateChassisSpeeds(
+                speeds,
+                slewRates,
+                fieldRelative,
+                useOdometryRotation
+                        ? RobotState.getInstance().getRobotPose().getRotation().toRotation2d()
+                        : getGyroRotation()));
 
         SwerveDriveKinematics.desaturateWheelSpeeds(states, maxModuleSpeed.get());
         for (SwerveModule m : modules) {
@@ -104,30 +115,26 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     private ChassisSpeeds calculateChassisSpeeds(
-            Translation2d translation,
-            double rotation,
-            boolean slewRates,
-            boolean fieldRelative,
-            Rotation2d robotRotation) {
-        ChassisSpeeds speeds;
+            ChassisSpeeds speeds, boolean slewRates, boolean fieldRelative, Rotation2d robotRotation) {
         if (slewRates) {
-            speeds =
-                    fieldRelative
-                            ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    slewRateLimiterTranslationalX.calculate(translation.getX()),
-                                    slewRateLimiterTranslationalY.calculate(translation.getY()),
-                                    slewRateLimiterRotaional.calculate(rotation),
-                                    robotRotation)
-                            : new ChassisSpeeds(
-                                    slewRateLimiterTranslationalX.calculate(translation.getX()),
-                                    slewRateLimiterTranslationalY.calculate(translation.getY()),
-                                    slewRateLimiterRotaional.calculate(rotation));
+            speeds = fieldRelative
+                    ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                            slewRateLimiterTranslationalX.calculate(speeds.vxMetersPerSecond),
+                            slewRateLimiterTranslationalY.calculate(speeds.vyMetersPerSecond),
+                            slewRateLimiterRotaional.calculate(speeds.omegaRadiansPerSecond),
+                            robotRotation)
+                    : new ChassisSpeeds(
+                            slewRateLimiterTranslationalX.calculate(speeds.vxMetersPerSecond),
+                            slewRateLimiterTranslationalY.calculate(speeds.vyMetersPerSecond),
+                            slewRateLimiterRotaional.calculate(speeds.omegaRadiansPerSecond));
         } else {
-            speeds =
-                    fieldRelative
-                            ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    translation.getX(), translation.getY(), rotation, robotRotation)
-                            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation);
+            speeds = fieldRelative
+                    ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                            speeds.vxMetersPerSecond,
+                            speeds.vyMetersPerSecond,
+                            speeds.omegaRadiansPerSecond,
+                            robotRotation)
+                    : speeds;
         }
         return speeds;
     }
@@ -136,7 +143,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * Resets the gyro
      */
     public void resetGyro() {
-        gyro.reset();
+        offset = Rotation2d.fromDegrees(gyro.getYaw()).unaryMinus();
     }
 
     /**
@@ -144,7 +151,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return The rotation
      */
     public Rotation2d getGyroRotation() {
-        return Rotation2d.fromDegrees(gyro.getAngle()).unaryMinus();
+        return Rotation2d.fromDegrees(gyro.getYaw()).unaryMinus().plus(offset);
     }
 
     /**
@@ -237,12 +244,9 @@ public class SwerveSubsystem extends SubsystemBase {
 
     private void sysIdDriveLog(SysIdRoutineLog log) {
         SwerveModule m = this.modules[0]; // Just use values from 1 module
+        log.motor("Module0").linearPosition(Distance.ofBaseUnits(m.getPosition().distanceMeters, Meters));
         log.motor("Module0")
-                .linearPosition(Distance.ofBaseUnits(m.getPosition().distanceMeters, Meters));
-        log.motor("Module0")
-                .linearVelocity(
-                        LinearVelocity.ofBaseUnits(
-                                m.getState().speedMetersPerSecond, MetersPerSecond));
+                .linearVelocity(LinearVelocity.ofBaseUnits(m.getState().speedMetersPerSecond, MetersPerSecond));
         log.motor("Module0").voltage(Voltage.ofBaseUnits(m.getDriveVolts(), Volts));
     }
 

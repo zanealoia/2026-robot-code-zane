@@ -31,8 +31,7 @@ public class RobotContainer {
     private SavedLoggedNetworkNumber controllerDeadband =
             SavedLoggedNetworkNumber.get("Tuning/Drive/ControllerDeadband", 0.08);
 
-    private SavedLoggedNetworkNumber maxRobotSpeed =
-            SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotSpeed", 1.0);
+    private SavedLoggedNetworkNumber maxRobotSpeed = SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotSpeed", 1.0);
 
     private SavedLoggedNetworkNumber maxRobotAnglarSpeed =
             SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
@@ -43,66 +42,39 @@ public class RobotContainer {
 
     private void configureBindings() {
         // Xbox controllers push "up" = neg valve so invert everything
-        swerveSubsystem.setDefaultCommand(
-                new DriveCommand(
-                        swerveSubsystem,
-                        () ->
-                                -MathUtil.applyDeadband(
-                                                primaryController.getLeftY(),
-                                                controllerDeadband.get())
-                                        * maxRobotSpeed.get(),
-                        () ->
-                                -MathUtil.applyDeadband(
-                                                primaryController.getLeftX(),
-                                                controllerDeadband.get())
-                                        * maxRobotSpeed.get(),
-                        () ->
-                                -MathUtil.applyDeadband(
-                                                primaryController.getRightX(),
-                                                controllerDeadband.get())
-                                        * Math.toRadians(maxRobotAnglarSpeed.get()),
-                        true));
+        swerveSubsystem.setDefaultCommand(new DriveCommand(
+                swerveSubsystem,
+                () -> -MathUtil.applyDeadband(primaryController.getLeftY(), controllerDeadband.get())
+                        * maxRobotSpeed.get(),
+                () -> -MathUtil.applyDeadband(primaryController.getLeftX(), controllerDeadband.get())
+                        * maxRobotSpeed.get(),
+                () -> -MathUtil.applyDeadband(primaryController.getRightX(), controllerDeadband.get())
+                        * Math.toRadians(maxRobotAnglarSpeed.get()),
+                true));
 
         primaryController
                 .a()
-                .whileTrue(
-                        new RunCommand(
-                                () -> {
-                                    // CtreConfigs.init();
-                                    swerveSubsystem.refreshTuning(false);
-                                },
-                                swerveSubsystem));
+                .whileTrue(new RunCommand(
+                        () -> {
+                            // CtreConfigs.init();
+                            swerveSubsystem.refreshTuning(false);
+                        },
+                        swerveSubsystem));
 
         primaryController
                 .b()
-                .whileTrue(
-                        new DriveToPoint(
-                                swerveSubsystem,
-                                new Pose2d(
-                                        new Translation2d(15.86, 1.93),
-                                        Rotation2d.fromDegrees(-56)),
-                                new Pose2d(
-                                        new Translation2d(0.01, 0.01), Rotation2d.fromDegrees(1))));
-        primaryController
-                .x()
-                .whileTrue(new RunCommand(() -> swerveSubsystem.resetGyro(), swerveSubsystem));
+                .whileTrue(new DriveToPoint(
+                        swerveSubsystem,
+                        new Pose2d(new Translation2d(15.86, 1.93), Rotation2d.fromDegrees(-56)),
+                        new Pose2d(new Translation2d(0.01, 0.01), Rotation2d.fromDegrees(1))));
+        primaryController.x().whileTrue(new RunCommand(() -> swerveSubsystem.resetGyro(), swerveSubsystem));
 
-        primaryController
-                .y()
-                .whileTrue(
-                        new RunCommand(
-                                () -> poseEstimator.setPosition(new Pose3d()), swerveSubsystem));
+        primaryController.y().whileTrue(new RunCommand(() -> poseEstimator.setPosition(new Pose3d()), swerveSubsystem));
 
         primaryController.povUp().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kForward));
-        primaryController
-                .povRight()
-                .whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kReverse));
-        primaryController
-                .povDown()
-                .whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kForward));
-        primaryController
-                .povLeft()
-                .whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kReverse));
+        primaryController.povRight().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kReverse));
+        primaryController.povDown().whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kForward));
+        primaryController.povLeft().whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kReverse));
     }
 
     public Command getAutonomousCommand() {

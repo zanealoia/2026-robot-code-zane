@@ -17,6 +17,7 @@ public class SavedLoggedNetworkString extends LoggedNetworkString implements Tun
 
     /**
      * Get an instance of a SavedLoggedNetworkString
+     *
      * @param key The key of the value
      * @param defautValue The default value
      * @return An instance of SavedLoggedNetworkString

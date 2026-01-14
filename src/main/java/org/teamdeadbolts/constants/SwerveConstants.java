@@ -13,8 +13,7 @@ import org.teamdeadbolts.subsystems.drive.SwerveModule.SwerveModuleConfig;
 public class SwerveConstants {
     public static final double WHEEL_CIRCUMFERENCE = Units.inchesToMeters(2 * 2.25 * Math.PI);
     public static final double CHASSIS_SIZE = Units.inchesToMeters(30);
-    public static final SensorDirectionValue SENSOR_DIRECTION =
-            SensorDirectionValue.CounterClockwise_Positive;
+    public static final SensorDirectionValue SENSOR_DIRECTION = SensorDirectionValue.CounterClockwise_Positive;
     /* Turning constants */
     public static final InvertedValue TURN_INVERTED_MODE = InvertedValue.CounterClockwise_Positive;
     public static final NeutralModeValue TURN_NEUTRAL_MODE = NeutralModeValue.Brake;
@@ -38,10 +37,9 @@ public class SwerveConstants {
             new SwerveModuleConfig(3, Rotation2d.fromDegrees(-171.7 + 180), 9, 10, 11);
 
     /* Kinematics */
-    public static final SwerveDriveKinematics SWERVE_KINEMATICS =
-            new SwerveDriveKinematics(
-                    new Translation2d(CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Front Left (B)
-                    new Translation2d(CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0), // Front Right (A)
-                    new Translation2d(-CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Back Left (B)
-                    new Translation2d(-CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0)); // Back Right (A)
+    public static final SwerveDriveKinematics SWERVE_KINEMATICS = new SwerveDriveKinematics(
+            new Translation2d(CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Front Left (B)
+            new Translation2d(CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0), // Front Right (A)
+            new Translation2d(-CHASSIS_SIZE / 2.0, CHASSIS_SIZE / 2.0), // Back Left (B)
+            new Translation2d(-CHASSIS_SIZE / 2.0, -CHASSIS_SIZE / 2.0)); // Back Right (A)
 }

@@ -4,6 +4,7 @@ package org.teamdeadbolts.utils;
 public class MathUtils {
     /**
      * Convert meters per second to rotations per second
+     *
      * @param wMPS Wheel velocity (in <strong>m/s</strong>)
      * @param c The circumference of the wheels
      * @return Wheel velocity (in <strong>rotations/s</strong>)
@@ -14,6 +15,7 @@ public class MathUtils {
 
     /**
      * Convert rotations per second to meters per second
+     *
      * @param wRPS The wheel velocity (in <strong>rotations/s</strong>)
      * @param c The circumference of the wheels
      * @return Wheel velocity (in <strong>m/s</strong>)

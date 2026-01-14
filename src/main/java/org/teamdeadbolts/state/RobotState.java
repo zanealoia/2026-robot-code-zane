@@ -4,9 +4,7 @@ package org.teamdeadbolts.state;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
-/**
- * Singleton class to hold the robot state
- */
+/** Singleton class to hold the robot state */
 public class RobotState {
     private Pose3d robotPose = new Pose3d(); // Field pose of the robot
     private ChassisSpeeds robotSpeeds = new ChassisSpeeds(); // Speed of the robot field rel
@@ -25,6 +23,7 @@ public class RobotState {
 
     /**
      * Get the robot pose
+     *
      * @return The robot pose
      */
     public Pose3d getRobotPose() {
@@ -33,6 +32,7 @@ public class RobotState {
 
     /**
      * Get the robot velocities
+     *
      * @return The robot velocities
      */
     public ChassisSpeeds getRobotVelocities() {
@@ -45,6 +45,7 @@ public class RobotState {
 
     /**
      * Set the robot pose
+     *
      * @param newPose The new robot pose
      */
     public void setRobotPose(Pose3d newPose) {
@@ -53,6 +54,7 @@ public class RobotState {
 
     /**
      * Set the robot velocities
+     *
      * @param newVelocities The new robot velocities
      */
     public void setRobotVelocities(ChassisSpeeds newVelocities) {

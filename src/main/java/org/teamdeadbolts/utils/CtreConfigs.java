@@ -6,9 +6,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
-/**
- * Configuration for CTRE devices
- */
+/** Configuration for CTRE devices */
 public class CtreConfigs {
     /* Confgis */
     /* Swerve */

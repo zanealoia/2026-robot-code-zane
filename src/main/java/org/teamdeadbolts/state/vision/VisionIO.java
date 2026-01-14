@@ -11,8 +11,7 @@ public interface VisionIO {
         public int[] tagIds = new int[0];
     }
 
-    public static record PoseObservation(
-            double timestamp, Pose3d pose, double ambiguity, double tagDist) {}
+    public static record PoseObservation(double timestamp, Pose3d pose, double ambiguity, double tagDist) {}
 
     public default void update(VisionIOCtx ctx) {}
 }

@@ -14,9 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Store config data on the rio
- */
+/** Store config data on the rio */
 public class ConfigManager {
     private static ConfigManager INSTANCE = null;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -33,15 +31,13 @@ public class ConfigManager {
 
     /**
      * Get the current instance of config manager or create it if it doesn't exist
+     *
      * @return An instance of ConfigManager
      */
     public static synchronized ConfigManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE =
-                    new ConfigManager(
-                            Path.of(
-                                    Filesystem.getDeployDirectory().toPath().toString(),
-                                    "../configs/"));
+            INSTANCE = new ConfigManager(
+                    Path.of(Filesystem.getDeployDirectory().toPath().toString(), "../configs/"));
         }
 
         return INSTANCE;
@@ -49,6 +45,7 @@ public class ConfigManager {
 
     /**
      * Get the current instance of config manager or create it if it doesn't exist
+     *
      * @return An instance of ConfigManager
      */
     public static synchronized ConfigManager getTestInstance(Path configDir) {
@@ -89,6 +86,7 @@ public class ConfigManager {
 
     /**
      * Get a value from the curret config
+     *
      * @param key The key
      * @return The value
      */
@@ -98,6 +96,7 @@ public class ConfigManager {
 
     /**
      * Set a value in the config
+     *
      * @param key
      * @param value
      */
@@ -126,9 +125,7 @@ public class ConfigManager {
         }
     }
 
-    /**
-     * Initalize config manager and load the current config
-     */
+    /** Initalize config manager and load the current config */
     private ConfigManager(Path configDir) {
         this.configDir = configDir;
         this.currentLink = configDir.resolve("current.json");
@@ -153,6 +150,7 @@ public class ConfigManager {
 
     /**
      * Save a version of the config file
+     *
      * @param version The version to save
      */
     public void saveVersion(int version) {
@@ -174,9 +172,8 @@ public class ConfigManager {
     }
 
     /**
-     * Save a new version
-     * This will save the config to a new file and also update
-     * the current file symlink
+     * Save a new version This will save the config to a new file and also update the current file
+     * symlink
      */
     public void saveNewVersion() {
         int version = getNextVersionNumber();
@@ -196,6 +193,7 @@ public class ConfigManager {
 
     /**
      * Load an exsiting version
+     *
      * @param version The version number to load
      */
     public void loadVersion(int version) {
@@ -234,6 +232,7 @@ public class ConfigManager {
 
     /**
      * Load config from a file
+     *
      * @param file The path to load from
      */
     private void loadFromFile(Path file) {
@@ -247,6 +246,7 @@ public class ConfigManager {
 
     /**
      * Get the next version numbers based of the already existing files
+     *
      * @return The version number
      */
     private int getNextVersionNumber() {
@@ -263,9 +263,7 @@ public class ConfigManager {
         }
     }
 
-    /**
-     * A wrapper class to store config versions
-     */
+    /** A wrapper class to store config versions */
     public class RobotConfig {
         public int version;
         public HashMap<String, Object> values = new HashMap<>();

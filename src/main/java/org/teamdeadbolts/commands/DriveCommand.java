@@ -1,7 +1,7 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.commands;
 
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -16,6 +16,7 @@ public class DriveCommand extends Command {
 
     /**
      * Command to drive swerve
+     *
      * @param swerveSubsystem The instance of {@link SwerveSubsystem}
      * @param forwardSupplier A supplier for forward motion (in <strong>m/s</strong>)
      * @param sidewaysSupplier A supplier for sideways motion (in <strong>m/s</strong>)
@@ -44,8 +45,8 @@ public class DriveCommand extends Command {
         Logger.recordOutput("Angle RadsS", rotationSupplier.getAsDouble());
 
         swerveSubsystem.drive(
-                new Translation2d(forwardSupplier.getAsDouble(), sidewaysSupplier.getAsDouble()),
-                rotationSupplier.getAsDouble(),
+                new ChassisSpeeds(
+                        forwardSupplier.getAsDouble(), sidewaysSupplier.getAsDouble(), rotationSupplier.getAsDouble()),
                 fieldRelative,
                 false,
                 false);

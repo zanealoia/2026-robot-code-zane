@@ -17,6 +17,7 @@ public class SavedLoggedNetworkBoolean extends LoggedNetworkBoolean implements T
 
     /**
      * Get an instance of a SavedLoggedNetworkBoolean
+     *
      * @param key The key of the value
      * @param defautValue The default value
      * @return An instance of SavedLoggedNetworkBoolean

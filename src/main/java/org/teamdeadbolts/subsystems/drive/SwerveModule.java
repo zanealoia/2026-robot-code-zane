@@ -26,36 +26,23 @@ public class SwerveModule {
     private CANcoder encoder;
 
     /** Tuning values */
-    private final SavedLoggedNetworkNumber dFFkS =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kS", 0.0);
+    private final SavedLoggedNetworkNumber dFFkS = SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kS", 0.0);
 
-    private final SavedLoggedNetworkNumber dFFkV =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kV", 0.0);
-    private final SavedLoggedNetworkNumber dFFkA =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kA", 0.0);
-    private final SimpleMotorFeedforward driveFF =
-            new SimpleMotorFeedforward(dFFkS.get(), dFFkS.get(), dFFkA.get());
+    private final SavedLoggedNetworkNumber dFFkV = SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kV", 0.0);
+    private final SavedLoggedNetworkNumber dFFkA = SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kA", 0.0);
+    private final SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(dFFkS.get(), dFFkS.get(), dFFkA.get());
 
-    private final SavedLoggedNetworkNumber tFFkS =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kS", 0.0);
-    private final SavedLoggedNetworkNumber tFFkV =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kV", 0.0);
-    private final SimpleMotorFeedforward turnFF =
-            new SimpleMotorFeedforward(tFFkS.get(), tFFkV.get());
+    private final SavedLoggedNetworkNumber tFFkS = SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kS", 0.0);
+    private final SavedLoggedNetworkNumber tFFkV = SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kV", 0.0);
+    private final SimpleMotorFeedforward turnFF = new SimpleMotorFeedforward(tFFkS.get(), tFFkV.get());
 
-    private static final SavedLoggedNetworkNumber dP =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kP", 0.0);
-    private static final SavedLoggedNetworkNumber dI =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kI", 0.0);
-    private static final SavedLoggedNetworkNumber dD =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kD", 0.0);
+    private static final SavedLoggedNetworkNumber dP = SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kP", 0.0);
+    private static final SavedLoggedNetworkNumber dI = SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kI", 0.0);
+    private static final SavedLoggedNetworkNumber dD = SavedLoggedNetworkNumber.get("Tuning/Swerve/Drive/kD", 0.0);
 
-    private static final SavedLoggedNetworkNumber tP =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kP", 0.0);
-    private static final SavedLoggedNetworkNumber tI =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kI", 0.0);
-    private static final SavedLoggedNetworkNumber tD =
-            SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kD", 0.0);
+    private static final SavedLoggedNetworkNumber tP = SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kP", 0.0);
+    private static final SavedLoggedNetworkNumber tI = SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kI", 0.0);
+    private static final SavedLoggedNetworkNumber tD = SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/kD", 0.0);
     private static final SavedLoggedNetworkNumber tMaxVel =
             SavedLoggedNetworkNumber.get("Tuning/Swerve/Turn/MaxVelocity", 0.0);
     private static final SavedLoggedNetworkNumber tMaxAccel =
@@ -63,8 +50,7 @@ public class SwerveModule {
 
     /* PID */
     private ProfiledPIDController tProfiledPIDController =
-            new ProfiledPIDController(
-                    tP.get(), tI.get(), tD.get(), new Constraints(tMaxVel.get(), tMaxAccel.get()));
+            new ProfiledPIDController(tP.get(), tI.get(), tD.get(), new Constraints(tMaxVel.get(), tMaxAccel.get()));
 
     private PIDController dPIDController = new PIDController(dP.get(), dI.get(), dD.get());
 
@@ -73,6 +59,7 @@ public class SwerveModule {
 
     /**
      * Create a new swerve module
+     *
      * @param config The {@link SwerveModuleConfig} for the module
      */
     public SwerveModule(SwerveModuleConfig config) {
@@ -86,9 +73,7 @@ public class SwerveModule {
         this.driveMotor.setPosition(0.0);
     }
 
-    /**
-     * Update motor and PID configurations from NetworkTables
-     */
+    /** Update motor and PID configurations from NetworkTables */
     public void configure() {
         this.driveMotor.getConfigurator().apply(CtreConfigs.swerveDriveFXConfig);
         this.turningMotor.getConfigurator().apply(CtreConfigs.swerveTurningFXConfig);
@@ -110,6 +95,7 @@ public class SwerveModule {
 
     /**
      * Set the desired state for the module
+     *
      * @param desiredState The desired state
      */
     public void setDesiredState(SwerveModuleState desiredState) {
@@ -120,6 +106,7 @@ public class SwerveModule {
 
     /**
      * Set the speed of the module (drive)
+     *
      * @param speed The desired speed in <strong>m/s</strong>
      */
     private void setSpeed(double speed) {
@@ -129,28 +116,27 @@ public class SwerveModule {
 
     /**
      * Set the angle
+     *
      * @param angle The angle as a {@link Rotation2d}
      */
     public void setAngle(Rotation2d angle) {
         Logger.recordOutput("Swerve/Module " + moduleNumber + "/TargetAngle", angle.getDegrees());
         Logger.recordOutput(
-                "Swerve/Module " + moduleNumber + "/TargetAngleRaw",
-                angle.getDegrees() - offset.getDegrees());
+                "Swerve/Module " + moduleNumber + "/TargetAngleRaw", angle.getDegrees() - offset.getDegrees());
 
         this.targetAngle = angle;
     }
+
     /**
      * Get the current rotation of the module
+     *
      * @return The rotation of the module
      */
     public Rotation2d getRotation() {
-        return Rotation2d.fromRotations(
-                encoder.getAbsolutePosition().getValueAsDouble() + offset.getRotations());
+        return Rotation2d.fromRotations(encoder.getAbsolutePosition().getValueAsDouble() + offset.getRotations());
     }
 
-    /**
-     * Reset the module to the absoulte position
-     */
+    /** Reset the module to the absoulte position */
     public void resetToAbs() {
         double corrected = encoder.getAbsolutePosition().getValueAsDouble() + offset.getRotations();
         turningMotor.setPosition(corrected);
@@ -158,25 +144,23 @@ public class SwerveModule {
 
     /**
      * Get the current state of the module
+     *
      * @return The state
      */
     public SwerveModuleState getState() {
         return new SwerveModuleState(
-                MathUtils.RPSToMPS(
-                        driveMotor.getVelocity().getValueAsDouble(),
-                        SwerveConstants.WHEEL_CIRCUMFERENCE),
+                MathUtils.RPSToMPS(driveMotor.getVelocity().getValueAsDouble(), SwerveConstants.WHEEL_CIRCUMFERENCE),
                 this.getRotation());
     }
 
     /**
      * Get the current position of the module
+     *
      * @return The position
      */
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(
-                MathUtils.RPSToMPS(
-                        driveMotor.getPosition().getValueAsDouble(),
-                        SwerveConstants.WHEEL_CIRCUMFERENCE),
+                MathUtils.RPSToMPS(driveMotor.getPosition().getValueAsDouble(), SwerveConstants.WHEEL_CIRCUMFERENCE),
                 this.getRotation());
     }
 
@@ -205,10 +189,8 @@ public class SwerveModule {
         double turnVoltage = turnPidOut + turnFFOut;
         turningMotor.setVoltage(turnVoltage);
 
-        double driveMeasurement =
-                MathUtils.RPSToMPS(
-                        this.driveMotor.getVelocity().getValueAsDouble(),
-                        SwerveConstants.WHEEL_CIRCUMFERENCE);
+        double driveMeasurement = MathUtils.RPSToMPS(
+                this.driveMotor.getVelocity().getValueAsDouble(), SwerveConstants.WHEEL_CIRCUMFERENCE);
 
         double drivePidOut = dPIDController.calculate(driveMeasurement, this.targetSpeedMps);
         double driveFFOut = driveFF.calculate(this.targetSpeedMps);
@@ -219,23 +201,17 @@ public class SwerveModule {
         Logger.recordOutput("Swerve/Module " + moduleNumber + "/DriveVoltageOut", driveVoltage);
         // Logger.recordOutput("Swerve/Module " + moduleNumber + "/TurnVoltage", turnVoltage);
 
-        Logger.recordOutput(
-                "Swerve/Module " + moduleNumber + "/DriveReportedMPS", driveMeasurement);
+        Logger.recordOutput("Swerve/Module " + moduleNumber + "/DriveReportedMPS", driveMeasurement);
         Logger.recordOutput(
                 "Swerve/Module " + moduleNumber + "/DriveReportedRPS",
                 this.driveMotor.getVelocity().getValueAsDouble());
-        Logger.recordOutput(
-                "Swerve/Module " + moduleNumber + "/DriveTargetMPS", this.targetSpeedMps);
+        Logger.recordOutput("Swerve/Module " + moduleNumber + "/DriveTargetMPS", this.targetSpeedMps);
 
+        Logger.recordOutput("Swerve/Module " + moduleNumber + "/DrivePIDError", dPIDController.getError());
         Logger.recordOutput(
-                "Swerve/Module " + moduleNumber + "/DrivePIDError", dPIDController.getError());
-        Logger.recordOutput(
-                "Swerve/Module " + moduleNumber + "/TurnPIDError",
-                tProfiledPIDController.getPositionError());
+                "Swerve/Module " + moduleNumber + "/TurnPIDError", tProfiledPIDController.getPositionError());
 
-        Logger.recordOutput(
-                "Swerve/Module " + moduleNumber + "/TurnPIDSetpoint",
-                Units.radiansToDegrees(turnSetpoint));
+        Logger.recordOutput("Swerve/Module " + moduleNumber + "/TurnPIDSetpoint", Units.radiansToDegrees(turnSetpoint));
 
         Logger.recordOutput(
                 "Swerve/Module " + moduleNumber + "/TurnMeasurementDeg",
@@ -244,15 +220,12 @@ public class SwerveModule {
 
     /**
      * A config for a module
+     *
      * @param offset The rotational offset from zero for the module
      * @param driveMoterId The CAN id of the drive motor
      * @param turningMotorId The CAN id of the turning motor
      * @param encoderId The CAN id of the encoder
      */
     public record SwerveModuleConfig(
-            int moduleNumber,
-            Rotation2d offset,
-            int driveMotorId,
-            int turningMotorId,
-            int encoderId) {}
+            int moduleNumber, Rotation2d offset, int driveMotorId, int turningMotorId, int encoderId) {}
 }

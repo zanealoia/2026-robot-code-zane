@@ -18,6 +18,7 @@ public class SavedLoggedNetworkNumber extends LoggedNetworkNumber implements Tun
 
     /**
      * Get an instance of a SavedLoggedNetworkNumber
+     *
      * @param key The key of the value
      * @param defautValue The default value
      * @return An instance of SavedLoggedNetworkNumber
