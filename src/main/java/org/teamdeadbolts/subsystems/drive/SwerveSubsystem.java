@@ -6,10 +6,6 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.studica.frc.Navx;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -58,26 +54,6 @@ public class SwerveSubsystem extends SubsystemBase {
     private Rotation2d offset;
 
     public SwerveSubsystem() {
-        RobotConfig robotConfig = null;
-
-        try {
-            robotConfig = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        AutoBuilder.configure(
-                () -> RobotState.getInstance().getRobotPose().toPose2d(),
-                null,
-                () -> RobotState.getInstance().getRobotVelocities(),
-                (speeds) -> this.drive(speeds, false, false, false),
-                new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
-                robotConfig,
-                () -> {
-                    return false;
-                },
-                this);
-
         this.resetGyro();
         this.modules = new SwerveModule[] {
             new SwerveModule(SwerveConstants.FRONT_LEFT_CONFIG),
@@ -260,7 +236,8 @@ public class SwerveSubsystem extends SubsystemBase {
         }
 
         ChassisSpeeds speeds = getFieldRelativeChassisSpeeds();
-        RobotState.getInstance().setRobotVelocities(speeds);
+        RobotState.getInstance().setFieldRelativeVelocities(speeds);
+        RobotState.getInstance().setRobotRelativeVelocities(getRobotRelativeChassisSpeeds());
         Logger.recordOutput("Swerve/RobotVelocities", speeds);
     }
 }

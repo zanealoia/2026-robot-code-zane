@@ -78,7 +78,7 @@ public class DriveToPoint extends Command {
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
         Pose2d currentPose = this.robotState.getRobotPose().toPose2d();
-        ChassisSpeeds speeds = this.robotState.getRobotVelocities();
+        ChassisSpeeds speeds = this.robotState.getFieldRelativeRobotVelocities();
 
         double currentDistance = currentPose.getTranslation().getDistance(target.getTranslation());
 
@@ -118,7 +118,7 @@ public class DriveToPoint extends Command {
     @Override
     public boolean isFinished() {
         Pose2d currentPose = robotState.getRobotPose().toPose2d();
-        ChassisSpeeds speeds = robotState.getRobotVelocities();
+        ChassisSpeeds speeds = robotState.getFieldRelativeRobotVelocities();
 
         double distToTarget = currentPose.getTranslation().getDistance(target.getTranslation());
         boolean atTranslation = distToTarget <= tolerance.getTranslation().getNorm();

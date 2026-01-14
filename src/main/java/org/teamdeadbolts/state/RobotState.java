@@ -7,7 +7,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 /** Singleton class to hold the robot state */
 public class RobotState {
     private Pose3d robotPose = new Pose3d(); // Field pose of the robot
-    private ChassisSpeeds robotSpeeds = new ChassisSpeeds(); // Speed of the robot field rel
+    private ChassisSpeeds fieldRelativeVelocities = new ChassisSpeeds(); // Speed of the robot field rel
+    private ChassisSpeeds robotRelativeVelocities = new ChassisSpeeds(); // Speed of the robot robot rel
 
     private static RobotState INSTANCE = new RobotState();
 
@@ -35,8 +36,12 @@ public class RobotState {
      *
      * @return The robot velocities
      */
-    public ChassisSpeeds getRobotVelocities() {
-        return robotSpeeds;
+    public ChassisSpeeds getFieldRelativeRobotVelocities() {
+        return this.fieldRelativeVelocities;
+    }
+
+    public ChassisSpeeds getRobotRelativeRobotVelocities() {
+        return this.robotRelativeVelocities;
     }
 
     /*
@@ -52,12 +57,20 @@ public class RobotState {
         this.robotPose = newPose;
     }
 
-    /**
-     * Set the robot velocities
-     *
-     * @param newVelocities The new robot velocities
-     */
-    public void setRobotVelocities(ChassisSpeeds newVelocities) {
-        this.robotSpeeds = newVelocities;
+    // /**
+    //  * Set the robot velocities
+    //  *
+    //  * @param newVelocities The new robot velocities
+    //  */
+    // public void setRobotVelocities(ChassisSpeeds newVelocities) {
+    //     this.robotSpeeds = newVelocities;
+    // }
+
+    public void setRobotRelativeVelocities(ChassisSpeeds newVelocities) {
+        this.robotRelativeVelocities = newVelocities;
+    }
+
+    public void setFieldRelativeVelocities(ChassisSpeeds newVelocities) {
+        this.fieldRelativeVelocities = newVelocities;
     }
 }

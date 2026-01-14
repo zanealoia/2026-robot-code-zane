@@ -1,6 +1,10 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -15,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.teamdeadbolts.commands.DriveCommand;
 import org.teamdeadbolts.commands.DriveToPoint;
 import org.teamdeadbolts.state.PoseEstimator;
+import org.teamdeadbolts.state.RobotState;
 import org.teamdeadbolts.state.vision.VisionIOPhoton;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
@@ -24,6 +29,8 @@ public class RobotContainer {
     private SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
 
     private CommandXboxController primaryController = new CommandXboxController(0);
+
+    private RobotState robotState = RobotState.getInstance();
 
     private PoseEstimator poseEstimator =
             new PoseEstimator(swerveSubsystem, new VisionIOPhoton("CenterCam", new Transform3d()));
@@ -37,6 +44,25 @@ public class RobotContainer {
             SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
 
     public RobotContainer() {
+        RobotConfig robotConfig = null;
+        try {
+            robotConfig = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        AutoBuilder.configure(
+                () -> robotState.getRobotPose().toPose2d(),
+                (pose2d) -> poseEstimator.setPosition(new Pose3d(pose2d)),
+                robotState::getRobotRelativeRobotVelocities,
+                (speeds) -> swerveSubsystem.drive(speeds, false, false, false),
+                new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
+                robotConfig,
+                () -> {
+                    return false;
+                },
+                this.swerveSubsystem);
+
         configureBindings();
     }
 
