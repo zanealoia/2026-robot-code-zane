@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Volts;
 import com.studica.frc.Navx;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -25,8 +26,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.function.BiConsumer;
 import org.littletonrobotics.junction.Logger;
+import org.teamdeadbolts.RobotState;
 import org.teamdeadbolts.constants.SwerveConstants;
-import org.teamdeadbolts.state.RobotState;
 import org.teamdeadbolts.utils.CtreConfigs;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
@@ -47,9 +48,6 @@ public class SwerveSubsystem extends SubsystemBase {
     private SysIdRoutine driveRoutine = new SysIdRoutine(
             new SysIdRoutine.Config(null, null, Time.ofBaseUnits(3, Seconds)),
             new SysIdRoutine.Mechanism(this::sysIdDriveVolts, this::sysIdDriveLog, this));
-
-    /* Callback that the swerve subsystem will update with module positions and gyro rotation */
-    private BiConsumer<SwerveModulePosition[], Rotation2d> modulePositionCallback = null;
 
     private Rotation2d offset;
 
@@ -206,10 +204,6 @@ public class SwerveSubsystem extends SubsystemBase {
         return driveRoutine.dynamic(direction);
     }
 
-    public void setModulePositionCallback(BiConsumer<SwerveModulePosition[], Rotation2d> callback) {
-        this.modulePositionCallback = callback;
-    }
-
     // Sysid functions
     private void sysIdDriveVolts(Voltage voltage) {
         for (SwerveModule m : this.modules) {
@@ -229,12 +223,11 @@ public class SwerveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         Logger.recordOutput("Swerve/GyroRotationDeg", getGyroRotation().getDegrees());
-        if (this.modulePositionCallback != null)
-            this.modulePositionCallback.accept(getModulePositions(), getGyroRotation());
         for (SwerveModule m : this.modules) {
             m.tick();
         }
 
+        RobotState.getInstance().updateFromSwerve(getModulePositions(), new Rotation3d(getGyroRotation()));
         ChassisSpeeds speeds = getFieldRelativeChassisSpeeds();
         RobotState.getInstance().setFieldRelativeVelocities(speeds);
         RobotState.getInstance().setRobotRelativeVelocities(getRobotRelativeChassisSpeeds());

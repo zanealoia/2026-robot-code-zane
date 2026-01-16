@@ -9,6 +9,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,11 +18,9 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.teamdeadbolts.commands.DriveCommand;
-import org.teamdeadbolts.commands.DriveToPoint;
-import org.teamdeadbolts.state.PoseEstimator;
-import org.teamdeadbolts.state.RobotState;
-import org.teamdeadbolts.state.vision.VisionIOPhoton;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
+import org.teamdeadbolts.subsystems.vision.PhotonVisionIO;
+import org.teamdeadbolts.subsystems.vision.VisionSubsystem;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class RobotContainer {
@@ -32,9 +31,8 @@ public class RobotContainer {
 
     private RobotState robotState = RobotState.getInstance();
 
-    private PoseEstimator poseEstimator =
-            new PoseEstimator(swerveSubsystem, new VisionIOPhoton("CenterCam", new Transform3d()));
-
+    private VisionSubsystem visionSubsystem =
+            new VisionSubsystem(swerveSubsystem, new PhotonVisionIO("CenterCam", new Transform3d()));
     private SavedLoggedNetworkNumber controllerDeadband =
             SavedLoggedNetworkNumber.get("Tuning/Drive/ControllerDeadband", 0.08);
 
@@ -44,6 +42,7 @@ public class RobotContainer {
             SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
 
     public RobotContainer() {
+        robotState.initPoseEstimator(new Rotation3d(swerveSubsystem.getGyroRotation()), swerveSubsystem.getModulePositions());
         RobotConfig robotConfig = null;
         try {
             robotConfig = RobotConfig.fromGUISettings();
@@ -53,7 +52,7 @@ public class RobotContainer {
 
         AutoBuilder.configure(
                 () -> robotState.getRobotPose().toPose2d(),
-                (pose2d) -> poseEstimator.setPosition(new Pose3d(pose2d)),
+                (pose2d) -> robotState.setEstimatedPose(new Pose3d(pose2d)),
                 robotState::getRobotRelativeRobotVelocities,
                 (speeds) -> swerveSubsystem.drive(speeds, false, false, false),
                 new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
@@ -87,15 +86,9 @@ public class RobotContainer {
                         },
                         swerveSubsystem));
 
-        primaryController
-                .b()
-                .whileTrue(new DriveToPoint(
-                        swerveSubsystem,
-                        new Pose2d(new Translation2d(15.86, 1.93), Rotation2d.fromDegrees(-56)),
-                        new Pose2d(new Translation2d(0.01, 0.01), Rotation2d.fromDegrees(1))));
         primaryController.x().whileTrue(new RunCommand(() -> swerveSubsystem.resetGyro(), swerveSubsystem));
 
-        primaryController.y().whileTrue(new RunCommand(() -> poseEstimator.setPosition(new Pose3d()), swerveSubsystem));
+        primaryController.y().whileTrue(new RunCommand(() -> robotState.setEstimatedPose(new Pose3d()), swerveSubsystem));
 
         primaryController.povUp().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kForward));
         primaryController.povRight().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kReverse));
@@ -105,9 +98,5 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
-    }
-
-    public void periodic() {
-        poseEstimator.update();
     }
 }

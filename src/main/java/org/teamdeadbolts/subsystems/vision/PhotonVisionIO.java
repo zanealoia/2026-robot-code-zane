@@ -1,5 +1,5 @@
 /* The Deadbolts (C) 2025 */
-package org.teamdeadbolts.state.vision;
+package org.teamdeadbolts.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -11,12 +11,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.littletonrobotics.junction.AutoLog;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.teamdeadbolts.constants.VisionConstants;
 
-public class VisionIOPhoton implements VisionIO {
+public class PhotonVisionIO {
     private final Transform3d offset;
     private final PhotonCamera camera;
     private final Map<Integer, Pose3d> tagPoseCache = new HashMap<>();
@@ -29,7 +30,7 @@ public class VisionIOPhoton implements VisionIO {
      * @param offset The Transform3d from the Robot's center to the Camera's lens.
      * @param fieldLayout The loaded AprilTagFieldLayout for the current competition.
      */
-    public VisionIOPhoton(String camName, Transform3d offset) {
+    public PhotonVisionIO(String camName, Transform3d offset) {
         this.camera = new PhotonCamera(camName);
         this.offset = offset;
 
@@ -38,8 +39,7 @@ public class VisionIOPhoton implements VisionIO {
         }
     }
 
-    @Override
-    public void update(VisionIOCtx ctx) {
+    public void update(PhotonVisionIOCtx ctx) {
         Tracer tracer = new Tracer();
         long startTime = RobotController.getFPGATime();
 
@@ -102,4 +102,12 @@ public class VisionIOPhoton implements VisionIO {
             tracer.printEpochs();
         }
     }
+
+    @AutoLog
+    public static class PhotonVisionIOCtx {
+        public PoseObservation[] observations = new PoseObservation[0];
+        public int[] tagIds = new int[0];
+    }
+
+    public static record PoseObservation(double timestamp, Pose3d pose, double ambiguity, double tagDist) {}
 }
