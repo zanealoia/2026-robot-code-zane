@@ -1,18 +1,14 @@
+/* The Deadbolts (C) 2026 */
 package org.teamdeadbolts.subsystems;
-
-import java.io.ObjectInputFilter.Config;
-
-import org.littletonrobotics.junction.Logger;
-import org.teamdeadbolts.constants.IntakeConstants;
-import org.teamdeadbolts.utils.tuning.ConfigManager;
-import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkBoolean;
-import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
+import org.teamdeadbolts.constants.IntakeConstants;
+import org.teamdeadbolts.utils.tuning.ConfigManager;
+import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class IntakeSubsystem extends SubsystemBase {
     public enum State {
@@ -30,15 +26,22 @@ public class IntakeSubsystem extends SubsystemBase {
 
     private PIDController armController = new PIDController(0.0, 0.0, 0.0);
 
-    private SavedLoggedNetworkNumber intakeDeployedAngle = SavedLoggedNetworkNumber.get("Tuning/Intake/IntakeDeployedAngle", 90.0);
-    private SavedLoggedNetworkNumber intakeStowedAngle = SavedLoggedNetworkNumber.get("Tuning/Intake/IntakeStowedAngle", 0.0);
-    private SavedLoggedNetworkNumber intakeShootArmSpeed = SavedLoggedNetworkNumber.get("Tuning/Intake/IntakeShootArmSpeed", 5.0); // Degrees per second
+    private SavedLoggedNetworkNumber intakeDeployedAngle =
+            SavedLoggedNetworkNumber.get("Tuning/Intake/IntakeDeployedAngle", 90.0);
+    private SavedLoggedNetworkNumber intakeStowedAngle =
+            SavedLoggedNetworkNumber.get("Tuning/Intake/IntakeStowedAngle", 0.0);
+    private SavedLoggedNetworkNumber intakeShootArmSpeed =
+            SavedLoggedNetworkNumber.get("Tuning/Intake/IntakeShootArmSpeed", 5.0); // Degrees per second
 
-    private SavedLoggedNetworkNumber armControllerP = SavedLoggedNetworkNumber.get("Tuning/Intake/ArmController/kP", 0.1);
-    private SavedLoggedNetworkNumber armControllerI = SavedLoggedNetworkNumber.get("Tuning/Intake/ArmController/kI", 0.0);
-    private SavedLoggedNetworkNumber armControllerD = SavedLoggedNetworkNumber.get("Tuning/Intake/ArmController/kD", 0.0);
+    private SavedLoggedNetworkNumber armControllerP =
+            SavedLoggedNetworkNumber.get("Tuning/Intake/ArmController/kP", 0.1);
+    private SavedLoggedNetworkNumber armControllerI =
+            SavedLoggedNetworkNumber.get("Tuning/Intake/ArmController/kI", 0.0);
+    private SavedLoggedNetworkNumber armControllerD =
+            SavedLoggedNetworkNumber.get("Tuning/Intake/ArmController/kD", 0.0);
 
-    private SavedLoggedNetworkNumber wheelIntakeVoltage = SavedLoggedNetworkNumber.get("Tuning/Intake/WheelIntakeVoltage", 6.0);
+    private SavedLoggedNetworkNumber wheelIntakeVoltage =
+            SavedLoggedNetworkNumber.get("Tuning/Intake/WheelIntakeVoltage", 6.0);
 
     public IntakeSubsystem() {
         ConfigManager.getInstance().onReady(this::reconfigure);
@@ -81,11 +84,11 @@ public class IntakeSubsystem extends SubsystemBase {
                 if (targetAngle < intakeStowedAngle.get() + 1.0) { // Close enough to stowed
                     targetState = State.STOWED;
                     break;
-                } 
+                }
                 targetAngle = currentAngle - intakeShootArmSpeed.get() * (1.0 / 50.0);
                 wheelMotor.setVoltage(0);
 
-                break;        
+                break;
         }
 
         double output = armController.calculate(currentAngle, targetAngle);

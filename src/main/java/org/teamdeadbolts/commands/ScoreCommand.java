@@ -1,11 +1,11 @@
+/* The Deadbolts (C) 2026 */
 package org.teamdeadbolts.commands;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import org.teamdeadbolts.subsystems.HopperSubsystem;
 import org.teamdeadbolts.subsystems.IndexerSubsystem;
 import org.teamdeadbolts.subsystems.IntakeSubsystem;
 import org.teamdeadbolts.subsystems.ShooterSubsystem;
-
-import edu.wpi.first.wpilibj2.command.Command;
 
 public class ScoreCommand extends Command {
     private ShooterSubsystem shooterSubsystem;
@@ -13,7 +13,11 @@ public class ScoreCommand extends Command {
     private HopperSubsystem hopperSubsystem;
     private IntakeSubsystem intakeSubsystem;
 
-    public ScoreCommand(ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem, HopperSubsystem hopperSubsystem, IntakeSubsystem intakeSubsystem) {
+    public ScoreCommand(
+            ShooterSubsystem shooterSubsystem,
+            IndexerSubsystem indexerSubsystem,
+            HopperSubsystem hopperSubsystem,
+            IntakeSubsystem intakeSubsystem) {
         this.shooterSubsystem = shooterSubsystem;
         this.indexerSubsystem = indexerSubsystem;
         this.hopperSubsystem = hopperSubsystem;

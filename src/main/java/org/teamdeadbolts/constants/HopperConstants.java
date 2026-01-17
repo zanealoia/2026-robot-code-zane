@@ -1,9 +1,9 @@
+/* The Deadbolts (C) 2026 */
 package org.teamdeadbolts.constants;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
-
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 public class HopperConstants {
     public static final int HOPPER_MOTOR_CAN_ID = -1;
@@ -16,7 +16,9 @@ public class HopperConstants {
         ConfigManager.getInstance().onReady(HopperConstants::init);
     }
 
-    private static final SavedLoggedNetworkNumber HopperMotorCurrentLimit = SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorCurrentLimit", 20);
+    private static final SavedLoggedNetworkNumber HopperMotorCurrentLimit =
+            SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorCurrentLimit", 20);
+
     public static void init() {
         HopperMotorCurrentLimit.initFromConfig();
         HOPPER_MOTOR_CONFIG.CurrentLimits.SupplyCurrentLimitEnable = true;

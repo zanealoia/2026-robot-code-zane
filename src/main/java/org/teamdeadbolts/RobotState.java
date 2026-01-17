@@ -1,16 +1,14 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts;
 
-import org.teamdeadbolts.constants.SwerveConstants;
-import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
-
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.PoseEstimator3d;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import org.teamdeadbolts.constants.SwerveConstants;
+import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 /** Singleton class to hold the robot state */
 public class RobotState {
@@ -25,7 +23,6 @@ public class RobotState {
             SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/VisionTransStdDev", 0.05);
     SavedLoggedNetworkNumber visionHeadingStdDev =
             SavedLoggedNetworkNumber.get("Tuning/PoseEstimator/VisionHeadingStdDev", 0.05);
-
 
     // private Pose3d robotPose = new Pose3d(); // Field pose of the robot
     private SwerveDrivePoseEstimator3d poseEstimator3d;
@@ -124,8 +121,6 @@ public class RobotState {
         double headingStdDev = visionHeadingStdDev.get() * distance;
 
         poseEstimator3d.addVisionMeasurement(
-                visionPose,
-                timestamp,
-                VecBuilder.fill(transStdDev, transStdDev, transStdDev, headingStdDev));
-        }
+                visionPose, timestamp, VecBuilder.fill(transStdDev, transStdDev, transStdDev, headingStdDev));
     }
+}

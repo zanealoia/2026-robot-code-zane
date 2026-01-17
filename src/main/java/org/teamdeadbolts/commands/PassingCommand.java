@@ -1,11 +1,10 @@
+/* The Deadbolts (C) 2026 */
 package org.teamdeadbolts.commands;
 
-import org.teamdeadbolts.subsystems.HopperSubsystem;
+import edu.wpi.first.wpilibj2.command.Command;
 import org.teamdeadbolts.subsystems.IndexerSubsystem;
 import org.teamdeadbolts.subsystems.IntakeSubsystem;
 import org.teamdeadbolts.subsystems.ShooterSubsystem;
-
-import edu.wpi.first.wpilibj2.command.Command;
 
 public class PassingCommand extends Command {
     private ShooterSubsystem shooterSubsystem;
@@ -18,8 +17,12 @@ public class PassingCommand extends Command {
     }
 
     private Target target;
-    
-    public PassingCommand(ShooterSubsystem shooterSubsystem, IndexerSubsystem indexerSubsystem, IntakeSubsystem intakeSubsystem, Target target) {
+
+    public PassingCommand(
+            ShooterSubsystem shooterSubsystem,
+            IndexerSubsystem indexerSubsystem,
+            IntakeSubsystem intakeSubsystem,
+            Target target) {
         this.shooterSubsystem = shooterSubsystem;
         this.indexerSubsystem = indexerSubsystem;
         this.intakeSubsystem = intakeSubsystem;

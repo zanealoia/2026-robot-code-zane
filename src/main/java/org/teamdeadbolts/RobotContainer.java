@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
 import org.teamdeadbolts.commands.DefaultShooterCommand;
 import org.teamdeadbolts.commands.DriveCommand;
 import org.teamdeadbolts.subsystems.HopperSubsystem;
@@ -29,9 +28,11 @@ import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 public class RobotContainer {
 
     private SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
+
     @SuppressWarnings("unused")
     private VisionSubsystem visionSubsystem =
             new VisionSubsystem(swerveSubsystem, new PhotonVisionIO("CenterCam", new Transform3d()));
+
     private HopperSubsystem hopperSubsystem = new HopperSubsystem();
     private IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
     private IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
@@ -40,8 +41,6 @@ public class RobotContainer {
     private CommandXboxController primaryController = new CommandXboxController(0);
 
     private RobotState robotState = RobotState.getInstance();
-    
-
 
     private SavedLoggedNetworkNumber controllerDeadband =
             SavedLoggedNetworkNumber.get("Tuning/Drive/ControllerDeadband", 0.08);
@@ -52,7 +51,8 @@ public class RobotContainer {
             SavedLoggedNetworkNumber.get("Tuning/Drive/MaxRobotAngluarSpeed", 1.0);
 
     public RobotContainer() {
-        robotState.initPoseEstimator(new Rotation3d(swerveSubsystem.getGyroRotation()), swerveSubsystem.getModulePositions());
+        robotState.initPoseEstimator(
+                new Rotation3d(swerveSubsystem.getGyroRotation()), swerveSubsystem.getModulePositions());
         RobotConfig robotConfig = null;
         try {
             robotConfig = RobotConfig.fromGUISettings();
@@ -88,9 +88,12 @@ public class RobotContainer {
                 true));
 
         shooterSubsystem.setDefaultCommand(new DefaultShooterCommand(shooterSubsystem, indexerSubsystem));
-        hopperSubsystem.setDefaultCommand(new RunCommand(() -> hopperSubsystem.setState(HopperSubsystem.State.HOLD), hopperSubsystem));
-        intakeSubsystem.setDefaultCommand(new RunCommand(() -> intakeSubsystem.setState(IntakeSubsystem.State.STOWED), intakeSubsystem));
-        indexerSubsystem.setDefaultCommand(new RunCommand(() -> indexerSubsystem.setState(IndexerSubsystem.State.OFF), indexerSubsystem));
+        hopperSubsystem.setDefaultCommand(
+                new RunCommand(() -> hopperSubsystem.setState(HopperSubsystem.State.HOLD), hopperSubsystem));
+        intakeSubsystem.setDefaultCommand(
+                new RunCommand(() -> intakeSubsystem.setState(IntakeSubsystem.State.STOWED), intakeSubsystem));
+        indexerSubsystem.setDefaultCommand(
+                new RunCommand(() -> indexerSubsystem.setState(IndexerSubsystem.State.OFF), indexerSubsystem));
 
         primaryController
                 .a()
@@ -103,7 +106,9 @@ public class RobotContainer {
 
         primaryController.x().whileTrue(new RunCommand(() -> swerveSubsystem.resetGyro(), swerveSubsystem));
 
-        primaryController.y().whileTrue(new RunCommand(() -> robotState.setEstimatedPose(new Pose3d()), swerveSubsystem));
+        primaryController
+                .y()
+                .whileTrue(new RunCommand(() -> robotState.setEstimatedPose(new Pose3d()), swerveSubsystem));
 
         primaryController.povUp().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kForward));
         primaryController.povRight().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kReverse));

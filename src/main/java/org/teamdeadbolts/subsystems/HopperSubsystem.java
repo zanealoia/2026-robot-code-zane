@@ -1,14 +1,13 @@
+/* The Deadbolts (C) 2026 */
 package org.teamdeadbolts.subsystems;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.HopperConstants;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
-
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class HopperSubsystem extends SubsystemBase {
     public enum State {
@@ -25,10 +24,13 @@ public class HopperSubsystem extends SubsystemBase {
     private DigitalInput lowerLimitSwitch = new DigitalInput(HopperConstants.HOPPER_LOWER_LIMIT_SWITCH_CHANNEL);
     private DigitalInput upperLimitSwitch = new DigitalInput(HopperConstants.HOPPER_UPPER_LIMIT_SWITCH_CHANNEL);
 
-    private SavedLoggedNetworkNumber hopperMotorFastVolts = SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorFastVolts", 1.0);
-    private SavedLoggedNetworkNumber hopperMotorSlowVolts = SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorSlowVolts", 0.5);
-    private SavedLoggedNetworkNumber hopperMotorHoldVolts = SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorHoldVolts", 0.0);
-    
+    private SavedLoggedNetworkNumber hopperMotorFastVolts =
+            SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorFastVolts", 1.0);
+    private SavedLoggedNetworkNumber hopperMotorSlowVolts =
+            SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorSlowVolts", 0.5);
+    private SavedLoggedNetworkNumber hopperMotorHoldVolts =
+            SavedLoggedNetworkNumber.get("Tuning/Hopper/HopperMotorHoldVolts", 0.0);
+
     public HopperSubsystem() {
         ConfigManager.getInstance().onReady(() -> {
             HopperConstants.init();
@@ -77,6 +79,5 @@ public class HopperSubsystem extends SubsystemBase {
         }
 
         Logger.recordOutput("Hopper/TargetState", targetState);
-
     }
 }

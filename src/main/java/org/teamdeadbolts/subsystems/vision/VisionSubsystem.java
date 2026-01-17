@@ -1,26 +1,14 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts.subsystems.vision;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator3d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.numbers.N4;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.function.Consumer;
-
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.RobotState;
-import org.teamdeadbolts.constants.SwerveConstants;
 import org.teamdeadbolts.constants.VisionConstants;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.subsystems.vision.PhotonVisionIO.PhotonVisionIOCtx;
@@ -68,7 +56,6 @@ public class VisionSubsystem extends SubsystemBase {
     //     this.poseEstimator3d.resetPosition(
     //             new Rotation3d(this.swerveSubsystem.getGyroRotation()), swerveSubsystem.getModulePositions(), pose);
     // }
-
 
     @Override
     public void periodic() {
@@ -119,10 +106,7 @@ public class VisionSubsystem extends SubsystemBase {
 
                     // poseObservationConsumer.accept(observation
                     RobotState.getInstance()
-                            .addVisionMeasurement(
-                                    observation.pose(),
-                                    observation.timestamp(),
-                                    observation.tagDist());
+                            .addVisionMeasurement(observation.pose(), observation.timestamp(), observation.tagDist());
                 }
             }
 

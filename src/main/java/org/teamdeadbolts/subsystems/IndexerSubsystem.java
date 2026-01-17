@@ -1,14 +1,13 @@
+/* The Deadbolts (C) 2026 */
 package org.teamdeadbolts.subsystems;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.IndexerConstants;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
-
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IndexerSubsystem extends SubsystemBase {
     public enum State {
@@ -24,12 +23,17 @@ public class IndexerSubsystem extends SubsystemBase {
 
     private State targetState = State.OFF;
 
-    private SavedLoggedNetworkNumber floorMotorIntakeVolts = SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerFloorMotorIntakeVolts", 6.0);
-    private SavedLoggedNetworkNumber floorMotorShootVolts = SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerFloorMotorShootVolts", 6.0);
-    private SavedLoggedNetworkNumber floorMotorJiggleVolts = SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerFloorMotorJiggleVolts", 3.0);
-    private SavedLoggedNetworkNumber kickerMotorShootVolts = SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerKickerMotorShootVolts", 6.0);
+    private SavedLoggedNetworkNumber floorMotorIntakeVolts =
+            SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerFloorMotorIntakeVolts", 6.0);
+    private SavedLoggedNetworkNumber floorMotorShootVolts =
+            SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerFloorMotorShootVolts", 6.0);
+    private SavedLoggedNetworkNumber floorMotorJiggleVolts =
+            SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerFloorMotorJiggleVolts", 3.0);
+    private SavedLoggedNetworkNumber kickerMotorShootVolts =
+            SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerKickerMotorShootVolts", 6.0);
 
-    private SavedLoggedNetworkNumber jiggleFrequency = SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerJiggleFrequency", 1.0);
+    private SavedLoggedNetworkNumber jiggleFrequency =
+            SavedLoggedNetworkNumber.get("Tuning/Indexer/IndexerJiggleFrequency", 1.0);
 
     public IndexerSubsystem() {
         ConfigManager.getInstance().onReady(this::reconfigure);
@@ -65,7 +69,9 @@ public class IndexerSubsystem extends SubsystemBase {
                 kickerMotor.setVoltage(kickerMotorShootVolts.get());
                 break;
             case JIGGLE:
-                double jiggleVolts = Math.sin(2 * Math.PI * jiggleFrequency.get() * (System.currentTimeMillis() / 1000.0)) * floorMotorJiggleVolts.get();
+                double jiggleVolts =
+                        Math.sin(2 * Math.PI * jiggleFrequency.get() * (System.currentTimeMillis() / 1000.0))
+                                * floorMotorJiggleVolts.get();
                 floorMotor.setVoltage(jiggleVolts);
                 kickerMotor.setVoltage(0);
                 break;
@@ -78,5 +84,4 @@ public class IndexerSubsystem extends SubsystemBase {
         Logger.recordOutput("Indexer/TargetState", targetState);
         Logger.recordOutput("Indexer/HasBall", hasBall());
     }
-
 }
