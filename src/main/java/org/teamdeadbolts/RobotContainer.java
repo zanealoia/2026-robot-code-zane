@@ -14,7 +14,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+
+import org.teamdeadbolts.commands.DefaultShooterCommand;
 import org.teamdeadbolts.commands.DriveCommand;
+import org.teamdeadbolts.subsystems.HopperSubsystem;
+import org.teamdeadbolts.subsystems.IndexerSubsystem;
+import org.teamdeadbolts.subsystems.IntakeSubsystem;
+import org.teamdeadbolts.subsystems.ShooterSubsystem;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.subsystems.vision.PhotonVisionIO;
 import org.teamdeadbolts.subsystems.vision.VisionSubsystem;
@@ -23,13 +29,20 @@ import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 public class RobotContainer {
 
     private SwerveSubsystem swerveSubsystem = new SwerveSubsystem();
+    @SuppressWarnings("unused")
+    private VisionSubsystem visionSubsystem =
+            new VisionSubsystem(swerveSubsystem, new PhotonVisionIO("CenterCam", new Transform3d()));
+    private HopperSubsystem hopperSubsystem = new HopperSubsystem();
+    private IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+    private IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+    private ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
     private CommandXboxController primaryController = new CommandXboxController(0);
 
     private RobotState robotState = RobotState.getInstance();
+    
 
-    private VisionSubsystem visionSubsystem =
-            new VisionSubsystem(swerveSubsystem, new PhotonVisionIO("CenterCam", new Transform3d()));
+
     private SavedLoggedNetworkNumber controllerDeadband =
             SavedLoggedNetworkNumber.get("Tuning/Drive/ControllerDeadband", 0.08);
 
@@ -73,6 +86,11 @@ public class RobotContainer {
                 () -> -MathUtil.applyDeadband(primaryController.getRightX(), controllerDeadband.get())
                         * Math.toRadians(maxRobotAnglarSpeed.get()),
                 true));
+
+        shooterSubsystem.setDefaultCommand(new DefaultShooterCommand(shooterSubsystem, indexerSubsystem));
+        hopperSubsystem.setDefaultCommand(new RunCommand(() -> hopperSubsystem.setState(HopperSubsystem.State.HOLD), hopperSubsystem));
+        intakeSubsystem.setDefaultCommand(new RunCommand(() -> intakeSubsystem.setState(IntakeSubsystem.State.STOWED), intakeSubsystem));
+        indexerSubsystem.setDefaultCommand(new RunCommand(() -> indexerSubsystem.setState(IndexerSubsystem.State.OFF), indexerSubsystem));
 
         primaryController
                 .a()

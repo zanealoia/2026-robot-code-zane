@@ -7,6 +7,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 public class HopperConstants {
     public static final int HOPPER_MOTOR_CAN_ID = -1;
+    public static final int HOPPER_UPPER_LIMIT_SWITCH_CHANNEL = -1;
+    public static final int HOPPER_LOWER_LIMIT_SWITCH_CHANNEL = -1;
 
     public static final TalonFXConfiguration HOPPER_MOTOR_CONFIG = new TalonFXConfiguration();
 
