@@ -1,12 +1,17 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -33,6 +38,8 @@ public class RobotContainer {
 
     private RobotState robotState = RobotState.getInstance();
 
+    private SendableChooser<Command> autoChooser = new SendableChooser<>();
+
     private SavedLoggedNetworkNumber controllerDeadband =
             SavedLoggedNetworkNumber.get("Tuning/Drive/ControllerDeadband", 0.08);
 
@@ -55,19 +62,27 @@ public class RobotContainer {
         //                 120,
         //                 4),
         //         new Translation2d[] {});
+        RobotConfig config = null;
+        try {
+            config = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        // AutoBuilder.configure(
-        //         () -> robotState.getRobotPose().toPose2d(),
-        //         (pose2d) -> robotState.setEstimatedPose(new Pose3d(pose2d)),
-        //         robotState::getRobotRelativeRobotVelocities,
-        //         (speeds) -> swerveSubsystem.drive(speeds, false, false, false),
-        //         new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
-        //         robotConfig,
-        //         () -> {
-        //             return false;
-        //         },
-        //         this.swerveSubsystem);
+        AutoBuilder.configure(
+                () -> robotState.getRobotPose().toPose2d(),
+                (pose2d) -> robotState.setEstimatedPose(new Pose3d(pose2d)),
+                robotState::getRobotRelativeRobotVelocities,
+                (speeds) -> swerveSubsystem.drive(speeds, false, false, false),
+                new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
+                config,
+                () -> {
+                    return false;
+                },
+                this.swerveSubsystem);
 
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("AutoChooser", autoChooser);
         configureBindings();
     }
 
@@ -112,6 +127,6 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return autoChooser.getSelected();
     }
 }

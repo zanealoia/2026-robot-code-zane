@@ -6,5 +6,5 @@ import edu.wpi.first.apriltag.AprilTagFields;
 
 public class VisionConstants {
     public static final AprilTagFieldLayout FIELD_LAYOUT =
-            AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 }

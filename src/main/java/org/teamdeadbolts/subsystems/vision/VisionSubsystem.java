@@ -11,20 +11,18 @@ import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.RobotState;
 import org.teamdeadbolts.constants.VisionConstants;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
-import org.teamdeadbolts.subsystems.vision.PhotonVisionIO.PhotonVisionIOCtx;
 import org.teamdeadbolts.subsystems.vision.PhotonVisionIO.PoseObservation;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkBoolean;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class VisionSubsystem extends SubsystemBase {
-    private Pose3d estimatedPose = new Pose3d();
 
     private RobotState robotState = RobotState.getInstance();
     // private SwerveSubsystem swerveSubsystem;
 
     // private SwerveDrivePoseEstimator3d poseEstimator3d;
 
-    private PhotonVisionIOCtx[] ctxs;
+    private PhotonVisionIOCtxAutoLogged[] ctxs;
     private PhotonVisionIO[] ios;
 
     // TODO
@@ -40,9 +38,9 @@ public class VisionSubsystem extends SubsystemBase {
 
     public VisionSubsystem(SwerveSubsystem swerveSubsystem, PhotonVisionIO... ios) {
         this.ios = ios;
-        this.ctxs = new PhotonVisionIOCtx[ios.length];
+        this.ctxs = new PhotonVisionIOCtxAutoLogged[ios.length];
         for (int i = 0; i < ios.length; i++) {
-            this.ctxs[i] = new PhotonVisionIOCtx();
+            this.ctxs[i] = new PhotonVisionIOCtxAutoLogged();
         }
         // this.swerveSubsystem = swerveSubsystem;
         // swerveSubsystem.setModulePositionCallback(this::updateFromSwerve);
@@ -63,8 +61,6 @@ public class VisionSubsystem extends SubsystemBase {
         Tracer tracer = new Tracer();
 
         tracer.addEpoch("Start");
-        Logger.recordOutput("PoseEstimator/Pose3d", estimatedPose);
-        robotState.setEstimatedPose(estimatedPose);
 
         tracer.addEpoch("Set Robot State");
 
@@ -72,7 +68,7 @@ public class VisionSubsystem extends SubsystemBase {
         robotPoses.clear();
         for (int i = 0; i < ios.length; i++) {
             ios[i].update(ctxs[i]);
-            // Logger.processInputs("Vision/Camera " + i, ctxs[i]);
+            Logger.processInputs("Vision/Camera " + i, ctxs[i]);
         }
 
         tracer.addEpoch("IO + Inputs");
@@ -98,13 +94,9 @@ public class VisionSubsystem extends SubsystemBase {
                     robotPoses.add(observation.pose());
                 }
 
-                if (enableVision.get()) {
-                    if (!acceptPose) continue;
-                    double stdDevFactor = observation.tagDist() * Math.sqrt(observation.tagDist());
-                    // double transStdDev = visionTransStdDev.get() * stdDevFactor;
-                    // double headingStdDev = visionHeadingStdDev.get() * stdDevFactor;
+                System.out.println(acceptPose + " " + observation.tagDist());
 
-                    // poseObservationConsumer.accept(observation
+                if (enableVision.get() && acceptPose) {
                     RobotState.getInstance()
                             .addVisionMeasurement(observation.pose(), observation.timestamp(), observation.tagDist());
                 }
@@ -129,5 +121,7 @@ public class VisionSubsystem extends SubsystemBase {
         if (elapsed > 1_000_000) {
             tracer.printEpochs();
         }
+
+        Logger.recordOutput("State/Pose", RobotState.getInstance().getRobotPose());
     }
 }

@@ -49,8 +49,6 @@ public class SwerveSubsystem extends SubsystemBase {
             new SysIdRoutine.Config(null, null, Time.ofBaseUnits(3, Seconds)),
             new SysIdRoutine.Mechanism(this::sysIdDriveVolts, this::sysIdDriveLog, this));
 
-    private Rotation2d offset;
-
     public SwerveSubsystem() {
         this.resetGyro();
         this.modules = new SwerveModule[] {
@@ -117,7 +115,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * Resets the gyro
      */
     public void resetGyro() {
-        offset = Rotation2d.fromDegrees(gyro.getYaw()).unaryMinus();
+        gyro.reset();
     }
 
     /**
@@ -125,7 +123,7 @@ public class SwerveSubsystem extends SubsystemBase {
      * @return The rotation
      */
     public Rotation2d getGyroRotation() {
-        return Rotation2d.fromDegrees(gyro.getYaw()).unaryMinus().plus(offset);
+        return Rotation2d.fromDegrees(gyro.getYaw()).unaryMinus();
     }
 
     /**
