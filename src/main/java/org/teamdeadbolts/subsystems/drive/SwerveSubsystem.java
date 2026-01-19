@@ -6,7 +6,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.studica.frc.Navx;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -32,7 +33,7 @@ import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
 
 public class SwerveSubsystem extends SubsystemBase {
-    private final Navx gyro = new Navx(0);
+    private final AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
     private SwerveModule[] modules;
     private SlewRateLimiter slewRateLimiterTranslationalX;
     private SlewRateLimiter slewRateLimiterTranslationalY;

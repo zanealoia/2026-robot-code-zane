@@ -81,10 +81,6 @@ public class RobotState {
         return this.robotRelativeVelocities;
     }
 
-    /*
-     =========================== SETTERS =========================
-    */
-
     /**
      * Set the robot pose
      *
@@ -111,7 +107,6 @@ public class RobotState {
         this.fieldRelativeVelocities = newVelocities;
     }
 
-    /* =========================== UPDATERS ========================= */
     public void updateFromSwerve(SwerveModulePosition[] positions, Rotation3d gyroRotation) {
         poseEstimator3d.update(gyroRotation, positions);
     }

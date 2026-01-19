@@ -1,10 +1,6 @@
 /* The Deadbolts (C) 2025 */
 package org.teamdeadbolts;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -14,12 +10,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import org.teamdeadbolts.commands.DefaultShooterCommand;
 import org.teamdeadbolts.commands.DriveCommand;
-import org.teamdeadbolts.subsystems.HopperSubsystem;
-import org.teamdeadbolts.subsystems.IndexerSubsystem;
-import org.teamdeadbolts.subsystems.IntakeSubsystem;
-import org.teamdeadbolts.subsystems.ShooterSubsystem;
 import org.teamdeadbolts.subsystems.drive.SwerveSubsystem;
 import org.teamdeadbolts.subsystems.vision.PhotonVisionIO;
 import org.teamdeadbolts.subsystems.vision.VisionSubsystem;
@@ -33,10 +24,10 @@ public class RobotContainer {
     private VisionSubsystem visionSubsystem =
             new VisionSubsystem(swerveSubsystem, new PhotonVisionIO("CenterCam", new Transform3d()));
 
-    private HopperSubsystem hopperSubsystem = new HopperSubsystem();
-    private IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
-    private IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-    private ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+    // private HopperSubsystem hopperSubsystem = new HopperSubsystem();
+    // private IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+    // private IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+    // private ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
     private CommandXboxController primaryController = new CommandXboxController(0);
 
@@ -53,24 +44,29 @@ public class RobotContainer {
     public RobotContainer() {
         robotState.initPoseEstimator(
                 new Rotation3d(swerveSubsystem.getGyroRotation()), swerveSubsystem.getModulePositions());
-        RobotConfig robotConfig = null;
-        try {
-            robotConfig = RobotConfig.fromGUISettings();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // RobotConfig robotConfig = new RobotConfig(
+        //         Mass.ofBaseUnits(30, Pounds),
+        //         MomentOfInertia.ofBaseUnits(5, KilogramSquareMeters),
+        //         new ModuleConfig(
+        //                 SwerveConstants.WHEEL_CIRCUMFERENCE / (2 * Math.PI),
+        //                 5,
+        //                 1,
+        //                 new DCMotor(0, 0, 0, 0, 0, 0),
+        //                 120,
+        //                 4),
+        //         new Translation2d[] {});
 
-        AutoBuilder.configure(
-                () -> robotState.getRobotPose().toPose2d(),
-                (pose2d) -> robotState.setEstimatedPose(new Pose3d(pose2d)),
-                robotState::getRobotRelativeRobotVelocities,
-                (speeds) -> swerveSubsystem.drive(speeds, false, false, false),
-                new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
-                robotConfig,
-                () -> {
-                    return false;
-                },
-                this.swerveSubsystem);
+        // AutoBuilder.configure(
+        //         () -> robotState.getRobotPose().toPose2d(),
+        //         (pose2d) -> robotState.setEstimatedPose(new Pose3d(pose2d)),
+        //         robotState::getRobotRelativeRobotVelocities,
+        //         (speeds) -> swerveSubsystem.drive(speeds, false, false, false),
+        //         new PPHolonomicDriveController(new PIDConstants(0), new PIDConstants(0)),
+        //         robotConfig,
+        //         () -> {
+        //             return false;
+        //         },
+        //         this.swerveSubsystem);
 
         configureBindings();
     }
@@ -87,13 +83,13 @@ public class RobotContainer {
                         * Math.toRadians(maxRobotAnglarSpeed.get()),
                 true));
 
-        shooterSubsystem.setDefaultCommand(new DefaultShooterCommand(shooterSubsystem, indexerSubsystem));
-        hopperSubsystem.setDefaultCommand(
-                new RunCommand(() -> hopperSubsystem.setState(HopperSubsystem.State.HOLD), hopperSubsystem));
-        intakeSubsystem.setDefaultCommand(
-                new RunCommand(() -> intakeSubsystem.setState(IntakeSubsystem.State.STOWED), intakeSubsystem));
-        indexerSubsystem.setDefaultCommand(
-                new RunCommand(() -> indexerSubsystem.setState(IndexerSubsystem.State.OFF), indexerSubsystem));
+        // shooterSubsystem.setDefaultCommand(new DefaultShooterCommand(shooterSubsystem, indexerSubsystem));
+        // hopperSubsystem.setDefaultCommand(
+        //         new RunCommand(() -> hopperSubsystem.setState(HopperSubsystem.State.HOLD), hopperSubsystem));
+        // intakeSubsystem.setDefaultCommand(
+        //         new RunCommand(() -> intakeSubsystem.setState(IntakeSubsystem.State.STOWED), intakeSubsystem));
+        // indexerSubsystem.setDefaultCommand(
+        // new RunCommand(() -> indexerSubsystem.setState(IndexerSubsystem.State.OFF), indexerSubsystem));
 
         primaryController
                 .a()
@@ -110,7 +106,6 @@ public class RobotContainer {
                 .y()
                 .whileTrue(new RunCommand(() -> robotState.setEstimatedPose(new Pose3d()), swerveSubsystem));
 
-        primaryController.povUp().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kForward));
         primaryController.povRight().whileTrue(swerveSubsystem.runDriveDynamTest(Direction.kReverse));
         primaryController.povDown().whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kForward));
         primaryController.povLeft().whileTrue(swerveSubsystem.runDriveQuasiTest(Direction.kReverse));

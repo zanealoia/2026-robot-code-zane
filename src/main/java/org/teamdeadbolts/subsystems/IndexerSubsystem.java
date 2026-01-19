@@ -4,6 +4,7 @@ package org.teamdeadbolts.subsystems;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.IndexerConstants;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
@@ -21,6 +22,7 @@ public class IndexerSubsystem extends SubsystemBase {
     private TalonFX kickerMotor = new TalonFX(IndexerConstants.INDEXER_KICKER_MOTOR_CAN_ID);
     private DigitalInput ballSensor = new DigitalInput(IndexerConstants.INDEXER_BALL_SENSOR_CHANNEL);
 
+    @AutoLogOutput
     private State targetState = State.OFF;
 
     private SavedLoggedNetworkNumber floorMotorIntakeVolts =
@@ -81,7 +83,6 @@ public class IndexerSubsystem extends SubsystemBase {
                 break;
         }
 
-        Logger.recordOutput("Indexer/TargetState", targetState);
-        Logger.recordOutput("Indexer/HasBall", hasBall());
+        Logger.recordOutput("IndexerSubsystem/HasBall", hasBall());
     }
 }

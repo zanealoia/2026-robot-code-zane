@@ -4,7 +4,7 @@ package org.teamdeadbolts.subsystems;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.teamdeadbolts.constants.HopperConstants;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
 import org.teamdeadbolts.utils.tuning.SavedLoggedNetworkNumber;
@@ -18,6 +18,7 @@ public class HopperSubsystem extends SubsystemBase {
         SLOW_DOWN,
     }
 
+    @AutoLogOutput
     private State targetState = State.HOLD;
 
     private TalonFX hopperMotor = new TalonFX(HopperConstants.HOPPER_MOTOR_CAN_ID);
@@ -77,7 +78,5 @@ public class HopperSubsystem extends SubsystemBase {
                 }
                 break;
         }
-
-        Logger.recordOutput("Hopper/TargetState", targetState);
     }
 }

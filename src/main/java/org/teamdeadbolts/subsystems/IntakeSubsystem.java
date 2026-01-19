@@ -5,6 +5,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.constants.IntakeConstants;
 import org.teamdeadbolts.utils.tuning.ConfigManager;
@@ -18,6 +19,7 @@ public class IntakeSubsystem extends SubsystemBase {
         SHOOT,
     }
 
+    @AutoLogOutput
     private State targetState = State.STOWED;
 
     private TalonFX armMotor = new TalonFX(IntakeConstants.INTAKE_ARM_MOTOR_CAN_ID);
@@ -94,9 +96,8 @@ public class IntakeSubsystem extends SubsystemBase {
         double output = armController.calculate(currentAngle, targetAngle);
         armMotor.setVoltage(output);
 
-        Logger.recordOutput("Intake/TargetState", targetState);
-        Logger.recordOutput("Intake/CurrentAngle", currentAngle);
-        Logger.recordOutput("Intake/TargetAngle", targetAngle);
-        Logger.recordOutput("Intake/PIDOutput", output);
+        Logger.recordOutput("IntakeSubsystem/CurrentAngle", currentAngle);
+        Logger.recordOutput("IntakeSubsystem/TargetAngle", targetAngle);
+        Logger.recordOutput("IntakeSubsystem/PIDOutput", output);
     }
 }

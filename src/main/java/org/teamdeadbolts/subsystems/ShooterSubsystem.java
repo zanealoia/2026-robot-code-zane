@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.teamdeadbolts.RobotState;
 import org.teamdeadbolts.constants.ShooterConstants;
@@ -30,6 +31,7 @@ public class ShooterSubsystem extends SubsystemBase {
         PASS_RIGHT;
     }
 
+    @AutoLogOutput
     private State targetState = State.OFF;
 
     private TalonFX turretMotor = new TalonFX(ShooterConstants.SHOOTER_TURRET_MOTOR_CAN_ID);
@@ -163,13 +165,12 @@ public class ShooterSubsystem extends SubsystemBase {
         double turretOutput = turretController.calculate(currentTurrentPosition, targetTurretPosition);
         turretMotor.setVoltage(turretOutput);
 
-        Logger.recordOutput("Shooter/TargetState", targetState);
-        Logger.recordOutput("Shooter/TargetHoodAngle", targetHoodAngle);
-        Logger.recordOutput("Shooter/CurrentHoodAngle", currentHoodAngle);
-        Logger.recordOutput("Shooter/TargetTurretPosition", targetTurretPosition);
-        Logger.recordOutput("Shooter/CurrentTurretPosition", currentTurrentPosition);
-        Logger.recordOutput("Shooter/TargetWheelSpeed", targetWheelSpeed);
-        Logger.recordOutput("Shooter/CurrentWheelSpeed", currentWheelSpeed);
+        Logger.recordOutput("ShooterSubsystem/TargetHoodAngle", targetHoodAngle);
+        Logger.recordOutput("ShooterSubsystem/CurrentHoodAngle", currentHoodAngle);
+        Logger.recordOutput("ShooterSubsystem/TargetTurretPosition", targetTurretPosition);
+        Logger.recordOutput("ShooterSubsystem/CurrentTurretPosition", currentTurrentPosition);
+        Logger.recordOutput("ShooterSubsystem/TargetWheelSpeed", targetWheelSpeed);
+        Logger.recordOutput("ShooterSubsystem/CurrentWheelSpeed", currentWheelSpeed);
     }
 
     private double calculateTurrentSetpoint(double currentAngle, double targetAngle) {
