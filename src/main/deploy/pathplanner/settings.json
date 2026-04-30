@@ -3,13 +3,17 @@
   "robotLength": 0.8128,
   "holonomicMode": true,
   "pathFolders": [
-    "Depot Side",
     "Center",
+    "Delayed Depot Side",
+    "Depot Side",
+    "Delayed Outpost Side",
     "Outpost Side"
   ],
   "autoFolders": [
-    "Depot",
     "Center",
+    "Delayed Depot",
+    "Depot",
+    "Delayed Outpost",
     "Outpost"
   ],
   "defaultMaxVel": 5.0,

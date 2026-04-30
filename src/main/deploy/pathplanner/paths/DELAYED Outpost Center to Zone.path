@@ -1,0 +1,92 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 6.378710792824075,
+        "y": 2.1616937290869975
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.907561559606481,
+        "y": 2.6913619068287034
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.0949633969907413,
+        "y": 2.1616937290869975
+      },
+      "prevControl": {
+        "x": 2.4709474826388895,
+        "y": 2.7518548177083333
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.19170673076923078,
+      "rotationDegrees": -59.165537359897286
+    },
+    {
+      "waypointRelativePos": 0.6387746710526316,
+      "rotationDegrees": -56.44573689578538
+    },
+    {
+      "waypointRelativePos": 0.7266550164473684,
+      "rotationDegrees": -140.35021138830862
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "SpinUp",
+      "waypointRelativePos": 0.28086890243902446,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "StopIntake",
+      "waypointRelativePos": 0.5957615240863791,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Shoot",
+      "waypointRelativePos": 0.9202657807308978,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "IntakeShoot",
+      "waypointRelativePos": 0.9799288617886186,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0.5,
+    "rotation": -140.05359620148013
+  },
+  "reversed": false,
+  "folder": "Delayed Outpost Side",
+  "idealStartingState": {
+    "velocity": 0.2,
+    "rotation": -57.64302531331629
+  },
+  "useDefaultConstraints": false
+}

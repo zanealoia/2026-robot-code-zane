@@ -1,0 +1,92 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 6.3827130353009265,
+        "y": 5.599351924189815
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.848840133101852,
+        "y": 5.2918353587962965
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.333916956018519,
+        "y": 7.139756004050926
+      },
+      "prevControl": {
+        "x": 1.6361190682870377,
+        "y": 5.153331524884259
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.13583470394736835,
+      "rotationDegrees": 54.119773103609155
+    },
+    {
+      "waypointRelativePos": 0.6244346217105263,
+      "rotationDegrees": 51.36666987785939
+    },
+    {
+      "waypointRelativePos": 0.6794407894736844,
+      "rotationDegrees": 128.44831071083493
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "StopIntake",
+      "waypointRelativePos": 0.3913332152974504,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "SpinUp",
+      "waypointRelativePos": 0.5333004568106313,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Shoot",
+      "waypointRelativePos": 0.8961302673512749,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "IntakeShoot",
+      "waypointRelativePos": 0.98,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 410.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": 108.64530555365587
+  },
+  "reversed": false,
+  "folder": "Delayed Depot Side",
+  "idealStartingState": {
+    "velocity": 0.2,
+    "rotation": 71.50926173072402
+  },
+  "useDefaultConstraints": false
+}
